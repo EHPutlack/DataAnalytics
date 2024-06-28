@@ -17,11 +17,19 @@ st.write(
 
 # Function to create fake data
 @st.cache_data
-def create_fake_data(num_patients=1000, num_parameters=25):
+def create_fake_data(num_patients=1000):
     np.random.seed(0)
-    data = np.random.rand(num_patients, num_parameters)
+    parameters = [
+        'Heart Rate', 'Blood Pressure Systolic', 'Blood Pressure Diastolic', 
+        'Respiratory Rate', 'Oxygen Saturation', 'Temperature', 'Weight', 
+        'Height', 'BMI', 'Blood Glucose', 'Cholesterol', 'HDL', 'LDL', 
+        'Triglycerides', 'Hemoglobin', 'Hematocrit', 'WBC Count', 
+        'RBC Count', 'Platelet Count', 'Creatinine', 'BUN', 'Sodium', 
+        'Potassium', 'Calcium', 'Magnesium'
+    ]
+    data = np.random.rand(num_patients, len(parameters))
     labels = np.random.choice([0, 1], size=(num_patients,), p=[0.5, 0.5])
-    df = pd.DataFrame(data, columns=[f'param_{i+1}' for i in range(num_parameters)])
+    df = pd.DataFrame(data, columns=parameters)
     df['ALS'] = labels
     return df
 
@@ -46,8 +54,17 @@ st.write(f"Model accuracy: {accuracy:.2f}")
 # User input for new patient data
 st.write("## Enter new patient data")
 new_data = []
-for i in range(25):
-    value = st.number_input(f"Parameter {i+1}", min_value=0.0, max_value=1.0, value=0.5)
+parameters = [
+    'Heart Rate', 'Blood Pressure Systolic', 'Blood Pressure Diastolic', 
+    'Respiratory Rate', 'Oxygen Saturation', 'Temperature', 'Weight', 
+    'Height', 'BMI', 'Blood Glucose', 'Cholesterol', 'HDL', 'LDL', 
+    'Triglycerides', 'Hemoglobin', 'Hematocrit', 'WBC Count', 
+    'RBC Count', 'Platelet Count', 'Creatinine', 'BUN', 'Sodium', 
+    'Potassium', 'Calcium', 'Magnesium'
+]
+
+for param in parameters:
+    value = st.number_input(f"{param}", min_value=0.0, max_value=1.0, value=0.5)
     new_data.append(value)
 
 # Predict ALS for the new patient data
@@ -58,4 +75,3 @@ if st.button("Predict ALS"):
         st.write("The patient is predicted to have ALS.")
     else:
         st.write("The patient is predicted not to have ALS.")
-
