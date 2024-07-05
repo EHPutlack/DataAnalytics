@@ -63,19 +63,11 @@ def create_realistic_data(num_patients=1000):
         np.random.normal(4, 0.5, num_patients),        # Potassium
         np.random.normal(9.5, 0.5, num_patients),      # Calcium
         np.random.normal(2, 0.2, num_patients),        # Magnesium
-        np.random.normal(70, 10, num_patients),        # Muscle Strength
-        np.random.normal(50, 5, num_patients),        # Motor Function Score
-        np.random.normal(80, 10, num_patients),        # Speech Clarity
-        np.random.normal(70, 10, num_patients),        # Swallowing Function
-        np.random.normal(60, 10, num_patients),        # Respiratory Capacity
-        
-        
-        # ALS-specific parameters with different distributions for ALS and non-ALS patients
-        np.concatenate([np.random.normal(50, 10, num_patients//2), np.random.normal(70, 10, num_patients//2)]), # Muscle Strength
-        np.concatenate([np.random.normal(30, 5, num_patients//2), np.random.normal(50, 5, num_patients//2)]),   # Motor Function Score
-        np.concatenate([np.random.normal(60, 10, num_patients//2), np.random.normal(80, 10, num_patients//2)]), # Speech Clarity
-        np.concatenate([np.random.normal(40, 10, num_patients//2), np.random.normal(70, 10, num_patients//2)]), # Swallowing Function
-        np.concatenate([np.random.normal(30, 10, num_patients//2), np.random.normal(60, 10, num_patients//2)])  # Respiratory Capacity
+        np.random.normal(50, 10, num_patients),        # Muscle Strength
+        np.random.normal(30, 5, num_patients),        # Motor Function Score
+        np.random.normal(60, 10, num_patients),        # Speech Clarity
+        np.random.normal(40, 10, num_patients),        # Swallowing Function
+        np.random.normal(30, 10, num_patients),        # Respiratory Capacity
     ])
     
     labels = np.concatenate([np.ones(num_patients//2), np.zeros(num_patients//2)])
