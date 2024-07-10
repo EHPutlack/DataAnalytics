@@ -13,6 +13,7 @@ st.write(
     """
     This app simulates data for 1,000 patients to compare 30 physiological parameters.
     50% of the patients have ALS. Enter new patient data to determine if they have ALS.
+    You can also upload a CSV file with patient data for prediction.
     """
 )
 
@@ -103,28 +104,32 @@ accuracy = accuracy_score(y_test, y_pred)
 st.write(f"Model accuracy on test set: {accuracy:.2f}")
 
 # User input for new patient data
-st.write("## Enter new patient data")
-new_data = []
-parameters = [
-    'Heart Rate', 'Blood Pressure Systolic', 'Blood Pressure Diastolic', 
-    'Respiratory Rate', 'Oxygen Saturation', 'Temperature', 'Weight', 
-    'Height', 'BMI', 'Blood Glucose', 'Cholesterol', 'HDL', 'LDL', 
-    'Triglycerides', 'Hemoglobin', 'Hematocrit', 'WBC Count', 
-    'RBC Count', 'Platelet Count', 'Creatinine', 'BUN', 'Sodium', 
-    'Potassium', 'Calcium', 'Magnesium',
-    'Muscle Strength', 'Motor Function Score', 'Speech Clarity', 'Swallowing Function', 'Respiratory Capacity'
-]
+st.write("## Enter new patient data or upload a CSV file")
 
-for param in parameters:
-    value = st.number_input(f"{param}", min_value=0.0, max_value=200.0, value=50.0)
-    new_data.append(value)
+# Option for user to upload data
+uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
 
-# Predict ALS for the new patient data
-if st.button("Predict ALS"):
-    new_data = np.array(new_data).reshape(1, -1)
-    new_data_scaled = scaler.transform(new_data)
-    prediction = model.predict(new_data_scaled)[0]
-    if prediction == 1:
-        st.write("The patient is predicted to have ALS.")
+if uploaded_file is not None:
+    new_data = pd.read_csv(uploaded_file)
+    if set(parameters).issubset(new_data.columns):
+        new_data_scaled = scaler.transform(new_data[parameters])
+        predictions = model.predict(new_data_scaled)
+        new_data['ALS Prediction'] = predictions
+        st.write("Predictions for uploaded data:")
+        st.dataframe(new_data)
     else:
-        st.write("The patient is predicted not to have ALS.")
+        st.write("Error: The uploaded CSV file does not contain the required columns.")
+else:
+    new_data = []
+    for param in parameters:
+        value = st.number_input(f"{param}", min_value=0.0, max_value=200.0, value=50.0)
+        new_data.append(value)
+
+    if st.button("Predict ALS"):
+        new_data = np.array(new_data).reshape(1, -1)
+        new_data_scaled = scaler.transform(new_data)
+        prediction = model.predict(new_data_scaled)[0]
+        if prediction == 1:
+            st.write("The patient is predicted to have ALS.")
+        else:
+            st.write("The patient is predicted not to have ALS.")
