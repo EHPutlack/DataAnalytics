@@ -17,19 +17,27 @@ st.write(
     """
 )
 
+# Define global list of parameters
+general_parameters = [
+    'Heart Rate', 'Blood Pressure Systolic', 'Blood Pressure Diastolic', 
+    'Respiratory Rate', 'Oxygen Saturation', 'Temperature', 'Weight', 
+    'Height', 'BMI', 'Blood Glucose', 'Cholesterol', 'HDL', 'LDL', 
+    'Triglycerides', 'Hemoglobin', 'Hematocrit', 'WBC Count', 
+    'RBC Count', 'Platelet Count', 'Creatinine', 'BUN', 'Sodium', 
+    'Potassium', 'Calcium', 'Magnesium'
+]
+
+als_specific_parameters = [
+    'Muscle Strength', 'Motor Function Score', 'Speech Clarity', 
+    'Swallowing Function', 'Respiratory Capacity'
+]
+
+parameters = general_parameters + als_specific_parameters
+
 # Function to create realistic fake data with ALS-specific parameters
 @st.cache_data
 def create_realistic_data(num_patients=1000):
     np.random.seed(0)
-    parameters = [
-        'Heart Rate', 'Blood Pressure Systolic', 'Blood Pressure Diastolic', 
-        'Respiratory Rate', 'Oxygen Saturation', 'Temperature', 'Weight', 
-        'Height', 'BMI', 'Blood Glucose', 'Cholesterol', 'HDL', 'LDL', 
-        'Triglycerides', 'Hemoglobin', 'Hematocrit', 'WBC Count', 
-        'RBC Count', 'Platelet Count', 'Creatinine', 'BUN', 'Sodium', 
-        'Potassium', 'Calcium', 'Magnesium', 'Muscle Strength', 'Motor Function Score',
-        'Speech Clarity', 'Swallowing Function', 'Respiratory Capacity'
-    ]
     
     # Generating realistic data distributions
     data = np.column_stack([
@@ -97,7 +105,7 @@ y_pred = model.predict(X_test)
 accuracy = accuracy_score(y_test, y_pred)
 st.write(f"Model accuracy on test set: {accuracy:.2f}")
 
-# User input for new patient data
+# User input for new patient data or upload a CSV file
 st.write("## Enter new patient data or upload a CSV file")
 
 # Option for user to upload data
