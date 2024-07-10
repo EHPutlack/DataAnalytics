@@ -21,21 +21,15 @@ st.write(
 @st.cache_data
 def create_realistic_data(num_patients=1000):
     np.random.seed(0)
-    general_parameters = [
+    parameters = [
         'Heart Rate', 'Blood Pressure Systolic', 'Blood Pressure Diastolic', 
         'Respiratory Rate', 'Oxygen Saturation', 'Temperature', 'Weight', 
         'Height', 'BMI', 'Blood Glucose', 'Cholesterol', 'HDL', 'LDL', 
         'Triglycerides', 'Hemoglobin', 'Hematocrit', 'WBC Count', 
         'RBC Count', 'Platelet Count', 'Creatinine', 'BUN', 'Sodium', 
-        'Potassium', 'Calcium', 'Magnesium'
+        'Potassium', 'Calcium', 'Magnesium', 'Muscle Strength', 'Motor Function Score',
+        'Speech Clarity', 'Swallowing Function', 'Respiratory Capacity'
     ]
-    
-    als_specific_parameters = [
-        'Muscle Strength', 'Motor Function Score', 'Speech Clarity', 
-        'Swallowing Function', 'Respiratory Capacity'
-    ]
-    
-    parameters = general_parameters + als_specific_parameters
     
     # Generating realistic data distributions
     data = np.column_stack([
