@@ -2,9 +2,14 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split, cross_val_score
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, AdaBoostClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.svm import SVC
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.naive_bayes import GaussianNB
 from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
 
 # Define global list of parameters
 general_parameters = [
@@ -81,18 +86,17 @@ X_scaled = scaler.fit_transform(X)
 
 X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=0)
 
-# Train a Random Forest model
-model = RandomForestClassifier(random_state=0)
-model.fit(X_train, y_train)
-
-# Cross-validation
-cv_scores = cross_val_score(model, X_scaled, y, cv=5)
-st.write(f"Cross-validated accuracy: {cv_scores.mean():.2f} ± {cv_scores.std():.2f}")
-
-# Display model accuracy on test set
-y_pred = model.predict(X_test)
-accuracy = accuracy_score(y_test, y_pred)
-st.write(f"Model accuracy on test set: {accuracy:.2f}")
+# Define the models to compare
+models = {
+    "Random Forest": RandomForestClassifier(random_state=0),
+    "Logistic Regression": LogisticRegression(random_state=0),
+    "Support Vector Machine": SVC(probability=True, random_state=0),
+    "K-Nearest Neighbors": KNeighborsClassifier(),
+    "Decision Tree": DecisionTreeClassifier(random_state=0),
+    "Naive Bayes": GaussianNB(),
+    "Gradient Boosting": GradientBoostingClassifier(random_state=0),
+    "AdaBoost": AdaBoostClassifier(random_state=0)
+}
 
 # Sidebar menu
 st.sidebar.title("Menu Options")
@@ -111,6 +115,9 @@ if menu_option == "Data Input Options":
         if st.button("Predict ALS"):
             new_data = np.array(new_data).reshape(1, -1)
             new_data_scaled = scaler.transform(new_data)
+            model_choice = st.sidebar.selectbox("Choose a model", list(models.keys()))
+            model = models[model_choice]
+            model.fit(X_train, y_train)
             prediction = model.predict(new_data_scaled)[0]
             if prediction == 1:
                 st.write("The patient is predicted to have ALS.")
@@ -124,6 +131,9 @@ if menu_option == "Data Input Options":
             new_data = pd.read_csv(uploaded_file)
             if set(parameters).issubset(new_data.columns):
                 new_data_scaled = scaler.transform(new_data[parameters])
+                model_choice = st.sidebar.selectbox("Choose a model", list(models.keys()))
+                model = models[model_choice]
+                model.fit(X_train, y_train)
                 predictions = model.predict(new_data_scaled)
                 new_data['ALS Prediction'] = predictions
                 st.write("Predictions for uploaded data:")
@@ -137,24 +147,48 @@ if menu_option == "Data Input Options":
         st.dataframe(example_data)
         st.write("## Predictions for example data")
         example_data_scaled = scaler.transform(example_data[parameters])
+        model_choice = st.sidebar.selectbox("Choose a model", list(models.keys()))
+        model = models[model_choice]
+        model.fit(X_train, y_train)
         predictions = model.predict(example_data_scaled)
         example_data['ALS Prediction'] = predictions
         st.dataframe(example_data)
 
 elif menu_option == "Model Information":
-    st.write("## Model Performance")
-    st.write(f"Cross-validated accuracy: {cv_scores.mean():.2f} ± {cv_scores.std():.2f}")
-    st.write(f"Model accuracy on test set: {accuracy:.2f}")
+    st.write("## Model Performance Comparison")
     
-    st.write("## Feature Importance")
-    feature_importance = pd.DataFrame({
-        'Feature': parameters,
-        'Importance': model.feature_importances_
-    }).sort_values(by='Importance', ascending=False)
-    st.bar_chart(feature_importance.set_index('Feature'))
+    performance_metrics = []
     
-    st.write("## Download Model")
-    st.download_button("Download Trained Model", data=open("random_forest_model.pkl", "rb").read(), file_name="random_forest_model.pkl")
+    for model_name, model in models.items():
+        model.fit(X_train, y_train)
+        y_pred = model.predict(X_test)
+        y_prob = model.predict_proba(X_test)[:, 1] if hasattr(model, "predict_proba") else [0] * len(y_test)
+        
+        accuracy = accuracy_score(y_test, y_pred)
+        precision = precision_score(y_test, y_pred)
+        recall = recall_score(y_test, y_pred)
+        f1 = f1_score(y_test, y_pred)
+        roc_auc = roc_auc_score(y_test, y_prob)
+        
+        performance_metrics.append({
+            "Model": model_name,
+            "Accuracy": accuracy,
+            "Precision": precision,
+            "Recall": recall,
+            "F1 Score": f1,
+            "ROC AUC": roc_auc
+        })
+    
+    performance_df = pd.DataFrame(performance_metrics)
+    st.dataframe(performance_df)
+
+    best_model = performance_df.loc[performance_df["Accuracy"].idxmax()]
+    st.write(f"### Best Model: {best_model['Model']}")
+    st.write(f"Accuracy: {best_model['Accuracy']:.2f}")
+    st.write(f"Precision: {best_model['Precision']:.2f}")
+    st.write(f"Recall: {best_model['Recall']:.2f}")
+    st.write(f"F1 Score: {best_model['F1 Score']:.2f}")
+    st.write(f"ROC AUC: {best_model['ROC AUC']:.2f}")
 
 elif menu_option == "Accessibility Settings":
     font_size = st.sidebar.slider("Adjust Font Size", min_value=10, max_value=30, value=16)
