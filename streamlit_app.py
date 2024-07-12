@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
 from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, AdaBoostClassifier
 from sklearn.linear_model import LogisticRegression
@@ -9,7 +11,8 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, confusion_matrix, roc_curve, precision_recall_curve
+from fpdf import FPDF
 
 # Define global list of parameters
 general_parameters = [
@@ -98,9 +101,35 @@ models = {
     "AdaBoost": AdaBoostClassifier(random_state=0)
 }
 
+# Train models and calculate performance metrics
+model_performance = {}
+
+for model_name, model in models.items():
+    model.fit(X_train, y_train)
+    y_pred = model.predict(X_test)
+    y_prob = model.predict_proba(X_test)[:, 1] if hasattr(model, "predict_proba") else [0] * len(y_test)
+    
+    accuracy = accuracy_score(y_test, y_pred)
+    precision = precision_score(y_test, y_pred)
+    recall = recall_score(y_test, y_pred)
+    f1 = f1_score(y_test, y_pred)
+    roc_auc = roc_auc_score(y_test, y_prob)
+    
+    model_performance[model_name] = {
+        "model": model,
+        "accuracy": accuracy,
+        "precision": precision,
+        "recall": recall,
+        "f1": f1,
+        "roc_auc": roc_auc,
+        "confusion_matrix": confusion_matrix(y_test, y_pred),
+        "roc_curve": roc_curve(y_test, y_prob),
+        "precision_recall_curve": precision_recall_curve(y_test, y_prob)
+    }
+
 # Sidebar menu
 st.sidebar.title("Menu Options")
-menu_option = st.sidebar.selectbox("Choose an option", ["Data Input Options", "Model Information", "Accessibility Settings"])
+menu_option = st.sidebar.selectbox("Choose an option", ["Data Input Options", "Model Information", "Graphs", "Accessibility Settings"])
 
 if menu_option == "Data Input Options":
     data_input_option = st.sidebar.selectbox("Select Data Input Method", ["Manual Entry", "CSV Upload", "Example Data"])
@@ -117,7 +146,6 @@ if menu_option == "Data Input Options":
             new_data_scaled = scaler.transform(new_data)
             model_choice = st.sidebar.selectbox("Choose a model", list(models.keys()))
             model = models[model_choice]
-            model.fit(X_train, y_train)
             prediction = model.predict(new_data_scaled)[0]
             if prediction == 1:
                 st.write("The patient is predicted to have ALS.")
@@ -133,7 +161,6 @@ if menu_option == "Data Input Options":
                 new_data_scaled = scaler.transform(new_data[parameters])
                 model_choice = st.sidebar.selectbox("Choose a model", list(models.keys()))
                 model = models[model_choice]
-                model.fit(X_train, y_train)
                 predictions = model.predict(new_data_scaled)
                 new_data['ALS Prediction'] = predictions
                 st.write("Predictions for uploaded data:")
@@ -149,7 +176,6 @@ if menu_option == "Data Input Options":
         example_data_scaled = scaler.transform(example_data[parameters])
         model_choice = st.sidebar.selectbox("Choose a model", list(models.keys()))
         model = models[model_choice]
-        model.fit(X_train, y_train)
         predictions = model.predict(example_data_scaled)
         example_data['ALS Prediction'] = predictions
         st.dataframe(example_data)
@@ -159,24 +185,14 @@ elif menu_option == "Model Information":
     
     performance_metrics = []
     
-    for model_name, model in models.items():
-        model.fit(X_train, y_train)
-        y_pred = model.predict(X_test)
-        y_prob = model.predict_proba(X_test)[:, 1] if hasattr(model, "predict_proba") else [0] * len(y_test)
-        
-        accuracy = accuracy_score(y_test, y_pred)
-        precision = precision_score(y_test, y_pred)
-        recall = recall_score(y_test, y_pred)
-        f1 = f1_score(y_test, y_pred)
-        roc_auc = roc_auc_score(y_test, y_prob)
-        
+    for model_name, metrics in model_performance.items():
         performance_metrics.append({
             "Model": model_name,
-            "Accuracy": accuracy,
-            "Precision": precision,
-            "Recall": recall,
-            "F1 Score": f1,
-            "ROC AUC": roc_auc
+            "Accuracy": metrics["accuracy"],
+            "Precision": metrics["precision"],
+            "Recall": metrics["recall"],
+            "F1 Score": metrics["f1"],
+            "ROC AUC": metrics["roc_auc"]
         })
     
     performance_df = pd.DataFrame(performance_metrics)
@@ -189,6 +205,153 @@ elif menu_option == "Model Information":
     st.write(f"Recall: {best_model['Recall']:.2f}")
     st.write(f"F1 Score: {best_model['F1 Score']:.2f}")
     st.write(f"ROC AUC: {best_model['ROC AUC']:.2f}")
+
+elif menu_option == "Graphs":
+    st.write("## Select Graphs to Display")
+    graph_options = st.sidebar.multiselect("Select Graphs", ["Confusion Matrix", "ROC Curve", "Precision-Recall Curve", "Feature Importance", "Model Performance Comparison"])
+
+    for model_name, metrics in model_performance.items():
+        if "Confusion Matrix" in graph_options:
+            st.write(f"### Confusion Matrix for {model_name}")
+            fig, ax = plt.subplots()
+            sns.heatmap(metrics["confusion_matrix"], annot=True, fmt="d", cmap="Blues", ax=ax)
+            ax.set_title(f"Confusion Matrix for {model_name}")
+            ax.set_xlabel("Predicted")
+            ax.set_ylabel("Actual")
+            st.pyplot(fig)
+
+        if "ROC Curve" in graph_options:
+            st.write(f"### ROC Curve for {model_name}")
+            fig, ax = plt.subplots()
+            fpr, tpr, _ = metrics["roc_curve"]
+            ax.plot(fpr, tpr, label=f"{model_name} (AUC = {metrics['roc_auc']:.2f})")
+            ax.plot([0, 1], [0, 1], linestyle="--")
+            ax.set_title(f"ROC Curve for {model_name}")
+            ax.set_xlabel("False Positive Rate")
+            ax.set_ylabel("True Positive Rate")
+            ax.legend(loc="lower right")
+            st.pyplot(fig)
+
+        if "Precision-Recall Curve" in graph_options:
+            st.write(f"### Precision-Recall Curve for {model_name}")
+            fig, ax = plt.subplots()
+            precision, recall, _ = metrics["precision_recall_curve"]
+            ax.plot(recall, precision, label=f"{model_name}")
+            ax.set_title(f"Precision-Recall Curve for {model_name}")
+            ax.set_xlabel("Recall")
+            ax.set_ylabel("Precision")
+            ax.legend(loc="lower left")
+            st.pyplot(fig)
+
+        if "Feature Importance" in graph_options and hasattr(metrics["model"], "feature_importances_"):
+            st.write(f"### Feature Importance for {model_name}")
+            feature_importance = pd.DataFrame({
+                'Feature': parameters,
+                'Importance': metrics["model"].feature_importances_
+            }).sort_values(by='Importance', ascending=False)
+            fig, ax = plt.subplots()
+            sns.barplot(x="Importance", y="Feature", data=feature_importance, ax=ax)
+            ax.set_title(f"Feature Importance for {model_name}")
+            st.pyplot(fig)
+
+        if "Model Performance Comparison" in graph_options:
+            st.write("### Model Performance Comparison")
+            fig, ax = plt.subplots()
+            performance_df.plot(kind="bar", x="Model", y=["Accuracy", "Precision", "Recall", "F1 Score", "ROC AUC"], ax=ax)
+            ax.set_title("Model Performance Comparison")
+            st.pyplot(fig)
+
+# Allow user to save a comprehensive report to PDF
+if st.sidebar.button("Save Report to PDF"):
+    class PDF(FPDF):
+        def header(self):
+            self.set_font('Arial', 'B', 12)
+            self.cell(0, 10, 'ALS Detection Model Report', 0, 1, 'C')
+
+        def chapter_title(self, title):
+            self.set_font('Arial', 'B', 12)
+            self.cell(0, 10, title, 0, 1, 'L')
+            self.ln(10)
+
+        def chapter_body(self, body):
+            self.set_font('Arial', '', 12)
+            self.multi_cell(0, 10, body)
+            self.ln()
+
+        def add_image(self, image_path):
+            self.image(image_path, x = None, y = None, w = 150, h = 150)
+
+    pdf = PDF()
+    pdf.add_page()
+    
+    pdf.chapter_title("Model Performance Comparison")
+    performance_summary = performance_df.to_string(index=False)
+    pdf.chapter_body(performance_summary)
+
+    for model_name, metrics in model_performance.items():
+        if "Confusion Matrix" in graph_options:
+            fig, ax = plt.subplots()
+            sns.heatmap(metrics["confusion_matrix"], annot=True, fmt="d", cmap="Blues", ax=ax)
+            ax.set_title(f"Confusion Matrix for {model_name}")
+            fig.savefig(f"{model_name}_confusion_matrix.png")
+            pdf.add_page()
+            pdf.chapter_title(f"Confusion Matrix for {model_name}")
+            pdf.add_image(f"{model_name}_confusion_matrix.png")
+
+        if "ROC Curve" in graph_options:
+            fig, ax = plt.subplots()
+            fpr, tpr, _ = metrics["roc_curve"]
+            ax.plot(fpr, tpr, label=f"{model_name} (AUC = {metrics['roc_auc']:.2f})")
+            ax.plot([0, 1], [0, 1], linestyle="--")
+            ax.set_title(f"ROC Curve for {model_name}")
+            ax.set_xlabel("False Positive Rate")
+            ax.set_ylabel("True Positive Rate")
+            ax.legend(loc="lower right")
+            fig.savefig(f"{model_name}_roc_curve.png")
+            pdf.add_page()
+            pdf.chapter_title(f"ROC Curve for {model_name}")
+            pdf.add_image(f"{model_name}_roc_curve.png")
+
+        if "Precision-Recall Curve" in graph_options:
+            fig, ax = plt.subplots()
+            precision, recall, _ = metrics["precision_recall_curve"]
+            ax.plot(recall, precision, label=f"{model_name}")
+            ax.set_title(f"Precision-Recall Curve for {model_name}")
+            ax.set_xlabel("Recall")
+            ax.set_ylabel("Precision")
+            ax.legend(loc="lower left")
+            fig.savefig(f"{model_name}_precision_recall_curve.png")
+            pdf.add_page()
+            pdf.chapter_title(f"Precision-Recall Curve for {model_name}")
+            pdf.add_image(f"{model_name}_precision_recall_curve.png")
+
+        if "Feature Importance" in graph_options and hasattr(metrics["model"], "feature_importances_"):
+            feature_importance = pd.DataFrame({
+                'Feature': parameters,
+                'Importance': metrics["model"].feature_importances_
+            }).sort_values(by='Importance', ascending=False)
+            fig, ax = plt.subplots()
+            sns.barplot(x="Importance", y="Feature", data=feature_importance, ax=ax)
+            ax.set_title(f"Feature Importance for {model_name}")
+            fig.savefig(f"{model_name}_feature_importance.png")
+            pdf.add_page()
+            pdf.chapter_title(f"Feature Importance for {model_name}")
+            pdf.add_image(f"{model_name}_feature_importance.png")
+
+    if "Model Performance Comparison" in graph_options:
+        fig, ax = plt.subplots()
+        performance_df.plot(kind="bar", x="Model", y=["Accuracy", "Precision", "Recall", "F1 Score", "ROC AUC"], ax=ax)
+        ax.set_title("Model Performance Comparison")
+        fig.savefig("model_performance_comparison.png")
+        pdf.add_page()
+        pdf.chapter_title("Model Performance Comparison")
+        pdf.add_image("model_performance_comparison.png")
+
+    pdf_file_path = '/mnt/data/als_detection_model_report.pdf'
+    pdf.output(pdf_file_path)
+
+    st.write("### Report saved successfully!")
+    st.write(f"[Download the report](sandbox:{pdf_file_path})")
 
 elif menu_option == "Accessibility Settings":
     font_size = st.sidebar.slider("Adjust Font Size", min_value=10, max_value=30, value=16)
