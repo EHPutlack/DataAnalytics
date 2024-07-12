@@ -17,6 +17,84 @@ st.write(
     """
 )
 
+# Sidebar menu
+st.sidebar.title("Menu Options")
+menu_option = st.sidebar.selectbox("Choose an option", ["Data Input Options", "Model Information", "Accessibility Settings"])
+
+if menu_option == "Data Input Options":
+    data_input_option = st.sidebar.selectbox("Select Data Input Method", ["Manual Entry", "CSV Upload", "Example Data"])
+    
+    if data_input_option == "Manual Entry":
+        st.write("## Enter new patient data")
+        new_data = []
+        for param in parameters:
+            value = st.number_input(f"{param}", min_value=0.0, max_value=200.0, value=50.0)
+            new_data.append(value)
+
+        if st.button("Predict ALS"):
+            new_data = np.array(new_data).reshape(1, -1)
+            new_data_scaled = scaler.transform(new_data)
+            prediction = model.predict(new_data_scaled)[0]
+            if prediction == 1:
+                st.write("The patient is predicted to have ALS.")
+            else:
+                st.write("The patient is predicted not to have ALS.")
+    
+    elif data_input_option == "CSV Upload":
+        uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
+
+        if uploaded_file is not None:
+            new_data = pd.read_csv(uploaded_file)
+            if set(parameters).issubset(new_data.columns):
+                new_data_scaled = scaler.transform(new_data[parameters])
+                predictions = model.predict(new_data_scaled)
+                new_data['ALS Prediction'] = predictions
+                st.write("Predictions for uploaded data:")
+                st.dataframe(new_data)
+            else:
+                st.write("Error: The uploaded CSV file does not contain the required columns.")
+    
+    elif data_input_option == "Example Data":
+        st.write("Loading example data...")
+        example_data = create_realistic_data(10)
+        st.dataframe(example_data)
+        st.write("## Predictions for example data")
+        example_data_scaled = scaler.transform(example_data[parameters])
+        predictions = model.predict(example_data_scaled)
+        example_data['ALS Prediction'] = predictions
+        st.dataframe(example_data)
+
+elif menu_option == "Model Information":
+    st.write("## Model Performance")
+    st.write(f"Cross-validated accuracy: {cv_scores.mean():.2f} ± {cv_scores.std():.2f}")
+    st.write(f"Model accuracy on test set: {accuracy:.2f}")
+    
+    st.write("## Feature Importance")
+    feature_importance = pd.DataFrame({
+        'Feature': parameters,
+        'Importance': model.feature_importances_
+    }).sort_values(by='Importance', ascending=False)
+    st.bar_chart(feature_importance.set_index('Feature'))
+    
+    st.write("## Download Model")
+    st.download_button("Download Trained Model", data=open("random_forest_model.pkl", "rb").read(), file_name="random_forest_model.pkl")
+
+elif menu_option == "Accessibility Settings":
+    font_size = st.sidebar.slider("Adjust Font Size", min_value=10, max_value=30, value=16)
+    st.write(f"<style>body {{font-size: {font_size}px;}}</style>", unsafe_allow_html=True)
+    
+    color_theme = st.sidebar.selectbox("Select Color Theme", ["Default", "High Contrast", "Colorblind Friendly"])
+    if color_theme == "High Contrast":
+        st.write("<style>body {background-color: black; color: white;}</style>", unsafe_allow_html=True)
+    elif color_theme == "Colorblind Friendly":
+        st.write("<style>body {background-color: white; color: black;}</style>", unsafe_allow_html=True)
+    
+    language = st.sidebar.selectbox("Select Language", ["English", "Spanish", "French"])
+    if language == "Spanish":
+        st.write("Idioma seleccionado: Español")
+    elif language == "French":
+        st.write("Langue sélectionnée: Français")
+
 # Define global list of parameters
 general_parameters = [
     'Heart Rate', 'Blood Pressure Systolic', 'Blood Pressure Diastolic', 
@@ -104,34 +182,3 @@ st.write(f"Cross-validated accuracy: {cv_scores.mean():.2f} ± {cv_scores.std():
 y_pred = model.predict(X_test)
 accuracy = accuracy_score(y_test, y_pred)
 st.write(f"Model accuracy on test set: {accuracy:.2f}")
-
-# User input for new patient data or upload a CSV file
-st.write("## Enter new patient data or upload a CSV file")
-
-# Option for user to upload data
-uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
-
-if uploaded_file is not None:
-    new_data = pd.read_csv(uploaded_file)
-    if set(parameters).issubset(new_data.columns):
-        new_data_scaled = scaler.transform(new_data[parameters])
-        predictions = model.predict(new_data_scaled)
-        new_data['ALS Prediction'] = predictions
-        st.write("Predictions for uploaded data:")
-        st.dataframe(new_data)
-    else:
-        st.write("Error: The uploaded CSV file does not contain the required columns.")
-else:
-    new_data = []
-    for param in parameters:
-        value = st.number_input(f"{param}", min_value=0.0, max_value=200.0, value=50.0)
-        new_data.append(value)
-
-    if st.button("Predict ALS"):
-        new_data = np.array(new_data).reshape(1, -1)
-        new_data_scaled = scaler.transform(new_data)
-        prediction = model.predict(new_data_scaled)[0]
-        if prediction == 1:
-            st.write("The patient is predicted to have ALS.")
-        else:
-            st.write("The patient is predicted not to have ALS.")
