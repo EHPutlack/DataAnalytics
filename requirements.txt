@@ -1,7 +1,8 @@
-altair
+cvaltair
 pandas
 streamlit
 scikit-learn
 matplotlib
 seaborn
 fpdf
+opencv
