@@ -1,5 +1,5 @@
 import streamlit as st
-import pandas as pd
+import pandas as np
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -246,7 +246,7 @@ elif menu_option == "Graphs":
 
     if "Model Performance Comparison" in graph_options:
         st.write("### Model Performance Comparison")
-        metrics_df = performance_df.melt(id_vars=["Model"], var_name="Metric", value_name="Score")
+        metrics_df = pd.melt(performance_df, id_vars=["Model"], var_name="Metric", value_name="Score")
         fig, ax = plt.subplots()
         sns.barplot(x="Metric", y="Score", hue="Model", data=metrics_df, ax=ax)
         ax.set_title("Model Performance Comparison")
@@ -333,7 +333,7 @@ if st.sidebar.button("Save Report to PDF"):
 
     if "Model Performance Comparison" in graph_options:
         fig, ax = plt.subplots()
-        metrics_df = performance_df.melt(id_vars=["Model"], var_name="Metric", value_name="Score")
+        metrics_df = pd.melt(performance_df, id_vars=["Model"], var_name="Metric", value_name="Score")
         sns.barplot(x="Metric", y="Score", hue="Model", data=metrics_df, ax=ax)
         ax.set_title("Model Performance Comparison")
         fig.savefig("model_performance_comparison.png")
