@@ -1,5 +1,5 @@
 import streamlit as st
-import pandas as np
+import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -102,7 +102,7 @@ models = {
 }
 
 # Train models and calculate performance metrics
-model_performance = []
+model_performance = {}
 
 for model_name, model in models.items():
     model.fit(X_train, y_train)
@@ -115,19 +115,17 @@ for model_name, model in models.items():
     f1 = f1_score(y_test, y_pred)
     roc_auc = roc_auc_score(y_test, y_prob)
     
-    model_performance.append({
-        "Model": model_name,
-        "Accuracy": accuracy,
-        "Precision": precision,
-        "Recall": recall,
-        "F1 Score": f1,
-        "ROC AUC": roc_auc,
-        "Confusion Matrix": confusion_matrix(y_test, y_pred),
-        "ROC Curve": roc_curve(y_test, y_prob),
-        "Precision-Recall Curve": precision_recall_curve(y_test, y_prob)
-    })
-
-performance_df = pd.DataFrame(model_performance)
+    model_performance[model_name] = {
+        "model": model,
+        "accuracy": accuracy,
+        "precision": precision,
+        "recall": recall,
+        "f1": f1,
+        "roc_auc": roc_auc,
+        "confusion_matrix": confusion_matrix(y_test, y_pred),
+        "roc_curve": roc_curve(y_test, y_prob),
+        "precision_recall_curve": precision_recall_curve(y_test, y_prob)
+    }
 
 # Sidebar menu
 st.sidebar.title("Menu Options")
@@ -184,6 +182,20 @@ if menu_option == "Data Input Options":
 
 elif menu_option == "Model Information":
     st.write("## Model Performance Comparison")
+    
+    performance_metrics = []
+    
+    for model_name, metrics in model_performance.items():
+        performance_metrics.append({
+            "Model": model_name,
+            "Accuracy": metrics["accuracy"],
+            "Precision": metrics["precision"],
+            "Recall": metrics["recall"],
+            "F1 Score": metrics["f1"],
+            "ROC AUC": metrics["roc_auc"]
+        })
+    
+    performance_df = pd.DataFrame(performance_metrics)
     st.dataframe(performance_df)
 
     best_model = performance_df.loc[performance_df["Accuracy"].idxmax()]
@@ -198,13 +210,11 @@ elif menu_option == "Graphs":
     st.write("## Select Graphs to Display")
     graph_options = st.sidebar.multiselect("Select Graphs", ["Confusion Matrix", "ROC Curve", "Precision-Recall Curve", "Feature Importance", "Model Performance Comparison"])
 
-    for metrics in model_performance:
-        model_name = metrics["Model"]
-        
+    for model_name, metrics in model_performance.items():
         if "Confusion Matrix" in graph_options:
             st.write(f"### Confusion Matrix for {model_name}")
             fig, ax = plt.subplots()
-            sns.heatmap(metrics["Confusion Matrix"], annot=True, fmt="d", cmap="Blues", ax=ax)
+            sns.heatmap(metrics["confusion_matrix"], annot=True, fmt="d", cmap="Blues", ax=ax)
             ax.set_title(f"Confusion Matrix for {model_name}")
             ax.set_xlabel("Predicted")
             ax.set_ylabel("Actual")
@@ -213,8 +223,8 @@ elif menu_option == "Graphs":
         if "ROC Curve" in graph_options:
             st.write(f"### ROC Curve for {model_name}")
             fig, ax = plt.subplots()
-            fpr, tpr, _ = metrics["ROC Curve"]
-            ax.plot(fpr, tpr, label=f"{model_name} (AUC = {metrics['ROC AUC']:.2f})")
+            fpr, tpr, _ = metrics["roc_curve"]
+            ax.plot(fpr, tpr, label=f"{model_name} (AUC = {metrics['roc_auc']:.2f})")
             ax.plot([0, 1], [0, 1], linestyle="--")
             ax.set_title(f"ROC Curve for {model_name}")
             ax.set_xlabel("False Positive Rate")
@@ -225,7 +235,7 @@ elif menu_option == "Graphs":
         if "Precision-Recall Curve" in graph_options:
             st.write(f"### Precision-Recall Curve for {model_name}")
             fig, ax = plt.subplots()
-            precision, recall, _ = metrics["Precision-Recall Curve"]
+            precision, recall, _ = metrics["precision_recall_curve"]
             ax.plot(recall, precision, label=f"{model_name}")
             ax.set_title(f"Precision-Recall Curve for {model_name}")
             ax.set_xlabel("Recall")
@@ -244,13 +254,12 @@ elif menu_option == "Graphs":
             ax.set_title(f"Feature Importance for {model_name}")
             st.pyplot(fig)
 
-    if "Model Performance Comparison" in graph_options:
-        st.write("### Model Performance Comparison")
-        metrics_df = pd.melt(performance_df, id_vars=["Model"], var_name="Metric", value_name="Score")
-        fig, ax = plt.subplots()
-        sns.barplot(x="Metric", y="Score", hue="Model", data=metrics_df, ax=ax)
-        ax.set_title("Model Performance Comparison")
-        st.pyplot(fig)
+        if "Model Performance Comparison" in graph_options:
+            st.write("### Model Performance Comparison")
+            fig, ax = plt.subplots()
+            performance_df.plot(kind="bar", x="Model", y=["Accuracy", "Precision", "Recall", "F1 Score", "ROC AUC"], ax=ax)
+            ax.set_title("Model Performance Comparison")
+            st.pyplot(fig)
 
 # Allow user to save a comprehensive report to PDF
 if st.sidebar.button("Save Report to PDF"):
@@ -279,12 +288,10 @@ if st.sidebar.button("Save Report to PDF"):
     performance_summary = performance_df.to_string(index=False)
     pdf.chapter_body(performance_summary)
 
-    for metrics in model_performance:
-        model_name = metrics["Model"]
-        
+    for model_name, metrics in model_performance.items():
         if "Confusion Matrix" in graph_options:
             fig, ax = plt.subplots()
-            sns.heatmap(metrics["Confusion Matrix"], annot=True, fmt="d", cmap="Blues", ax=ax)
+            sns.heatmap(metrics["confusion_matrix"], annot=True, fmt="d", cmap="Blues", ax=ax)
             ax.set_title(f"Confusion Matrix for {model_name}")
             fig.savefig(f"{model_name}_confusion_matrix.png")
             pdf.add_page()
@@ -293,8 +300,8 @@ if st.sidebar.button("Save Report to PDF"):
 
         if "ROC Curve" in graph_options:
             fig, ax = plt.subplots()
-            fpr, tpr, _ = metrics["ROC Curve"]
-            ax.plot(fpr, tpr, label=f"{model_name} (AUC = {metrics['ROC AUC']:.2f})")
+            fpr, tpr, _ = metrics["roc_curve"]
+            ax.plot(fpr, tpr, label=f"{model_name} (AUC = {metrics['roc_auc']:.2f})")
             ax.plot([0, 1], [0, 1], linestyle="--")
             ax.set_title(f"ROC Curve for {model_name}")
             ax.set_xlabel("False Positive Rate")
@@ -307,7 +314,7 @@ if st.sidebar.button("Save Report to PDF"):
 
         if "Precision-Recall Curve" in graph_options:
             fig, ax = plt.subplots()
-            precision, recall, _ = metrics["Precision-Recall Curve"]
+            precision, recall, _ = metrics["precision_recall_curve"]
             ax.plot(recall, precision, label=f"{model_name}")
             ax.set_title(f"Precision-Recall Curve for {model_name}")
             ax.set_xlabel("Recall")
@@ -333,8 +340,7 @@ if st.sidebar.button("Save Report to PDF"):
 
     if "Model Performance Comparison" in graph_options:
         fig, ax = plt.subplots()
-        metrics_df = pd.melt(performance_df, id_vars=["Model"], var_name="Metric", value_name="Score")
-        sns.barplot(x="Metric", y="Score", hue="Model", data=metrics_df, ax=ax)
+        performance_df.plot(kind="bar", x="Model", y=["Accuracy", "Precision", "Recall", "F1 Score", "ROC AUC"], ax=ax)
         ax.set_title("Model Performance Comparison")
         fig.savefig("model_performance_comparison.png")
         pdf.add_page()
