@@ -254,12 +254,13 @@ elif menu_option == "Graphs":
             ax.set_title(f"Feature Importance for {model_name}")
             st.pyplot(fig)
 
-        if "Model Performance Comparison" in graph_options:
-            st.write("### Model Performance Comparison")
-            fig, ax = plt.subplots()
-            performance_df.plot(kind="bar", x="Model", y=["Accuracy", "Precision", "Recall", "F1 Score", "ROC AUC"], ax=ax)
-            ax.set_title("Model Performance Comparison")
-            st.pyplot(fig)
+    if "Model Performance Comparison" in graph_options:
+        st.write("### Model Performance Comparison")
+        metrics_df = performance_df.melt(id_vars=["Model"], var_name="Metric", value_name="Score")
+        fig, ax = plt.subplots()
+        sns.barplot(x="Metric", y="Score", hue="Model", data=metrics_df, ax=ax)
+        ax.set_title("Model Performance Comparison")
+        st.pyplot(fig)
 
 # Allow user to save a comprehensive report to PDF
 if st.sidebar.button("Save Report to PDF"):
@@ -340,7 +341,8 @@ if st.sidebar.button("Save Report to PDF"):
 
     if "Model Performance Comparison" in graph_options:
         fig, ax = plt.subplots()
-        performance_df.plot(kind="bar", x="Model", y=["Accuracy", "Precision", "Recall", "F1 Score", "ROC AUC"], ax=ax)
+        metrics_df = performance_df.melt(id_vars=["Model"], var_name="Metric", value_name="Score")
+        sns.barplot(x="Metric", y="Score", hue="Model", data=metrics_df, ax=ax)
         ax.set_title("Model Performance Comparison")
         fig.savefig("model_performance_comparison.png")
         pdf.add_page()
