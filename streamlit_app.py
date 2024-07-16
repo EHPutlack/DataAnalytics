@@ -103,6 +103,7 @@ models = {
 
 # Train models and calculate performance metrics
 model_performance = {}
+performance_metrics = []
 
 for model_name, model in models.items():
     model.fit(X_train, y_train)
@@ -126,6 +127,15 @@ for model_name, model in models.items():
         "roc_curve": roc_curve(y_test, y_prob),
         "precision_recall_curve": precision_recall_curve(y_test, y_prob)
     }
+    
+    performance_metrics.append({
+        "Model": model_name,
+        "Accuracy": accuracy,
+        "Precision": precision,
+        "Recall": recall,
+        "F1 Score": f1,
+        "ROC AUC": roc_auc
+    })
 
 # Sidebar menu
 st.sidebar.title("Menu Options")
@@ -182,18 +192,6 @@ if menu_option == "Data Input Options":
 
 elif menu_option == "Model Information":
     st.write("## Model Performance Comparison")
-    
-    performance_metrics = []
-    
-    for model_name, metrics in model_performance.items():
-        performance_metrics.append({
-            "Model": model_name,
-            "Accuracy": metrics["accuracy"],
-            "Precision": metrics["precision"],
-            "Recall": metrics["recall"],
-            "F1 Score": metrics["f1"],
-            "ROC AUC": metrics["roc_auc"]
-        })
     
     performance_df = pd.DataFrame(performance_metrics)
     st.dataframe(performance_df)
