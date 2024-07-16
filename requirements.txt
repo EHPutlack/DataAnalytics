@@ -1,4 +1,4 @@
-cvaltair
+altair
 pandas
 streamlit
 scikit-learn
