@@ -287,7 +287,7 @@ if st.sidebar.button("Save Report to PDF"):
     pdf.add_page()
     
     pdf.chapter_title("Model Performance Comparison")
-    performance_summary = performance_df.to_string(index=False)
+    performance_summary = pd.DataFrame(performance_metrics).to_string(index=False)
     pdf.chapter_body(performance_summary)
 
     for model_name, metrics in model_performance.items():
