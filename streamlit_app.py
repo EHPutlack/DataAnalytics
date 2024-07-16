@@ -263,6 +263,8 @@ elif menu_option == "Graphs":
 
 # Allow user to save a comprehensive report to PDF
 if st.sidebar.button("Save Report to PDF"):
+    graph_options = st.sidebar.multiselect("Select Graphs for PDF", ["Confusion Matrix", "ROC Curve", "Precision-Recall Curve", "Feature Importance", "Model Performance Comparison"])
+    
     class PDF(FPDF):
         def header(self):
             self.set_font('Arial', 'B', 12)
