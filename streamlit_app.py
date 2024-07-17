@@ -148,7 +148,7 @@ if menu_option == "Data Input Options":
         st.write("## Enter new patient data")
         new_data = []
         for param in parameters:
-            value = st.number_input(f"{param}", min_value=0.0, max_value=num_patients, value=50.0)
+            value = st.number_input(f"{param}", min_value=0.0, max_value=200.0, value=50.0)
             new_data.append(value)
 
         if st.button("Predict ALS"):
