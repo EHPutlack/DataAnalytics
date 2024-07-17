@@ -87,7 +87,7 @@ y = df['ALS']
 scaler = StandardScaler()
 X_scaled = scaler.fit_transform(X)
 
-X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.5, random_state=0)
+X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=1, random_state=0)
 
 # Define the models to compare
 models = {
