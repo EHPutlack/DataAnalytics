@@ -13,6 +13,7 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, confusion_matrix, roc_curve, precision_recall_curve
 from fpdf import FPDF
+from io import BytesIO
 
 # Define global list of parameters
 general_parameters = [
@@ -296,7 +297,8 @@ if st.sidebar.button("Save Report to PDF"):
             fig.savefig(f"{model_name}_confusion_matrix.png")
             pdf.add_page()
             pdf.chapter_title(f"Confusion Matrix for {model_name}")
-            pdf.add_image(f"{model_name}_confusion_matrix.png")
+            with open(f"{model_name}_confusion_matrix.png", "rb") as image_file:
+                pdf.image(image_file.read(), x = None, y = None, w = 150, h = 150)
 
         if "ROC Curve" in graph_options:
             fig, ax = plt.subplots()
@@ -310,7 +312,8 @@ if st.sidebar.button("Save Report to PDF"):
             fig.savefig(f"{model_name}_roc_curve.png")
             pdf.add_page()
             pdf.chapter_title(f"ROC Curve for {model_name}")
-            pdf.add_image(f"{model_name}_roc_curve.png")
+            with open(f"{model_name}_roc_curve.png", "rb") as image_file:
+                pdf.image(image_file.read(), x = None, y = None, w = 150, h = 150)
 
         if "Precision-Recall Curve" in graph_options:
             fig, ax = plt.subplots()
@@ -323,7 +326,8 @@ if st.sidebar.button("Save Report to PDF"):
             fig.savefig(f"{model_name}_precision_recall_curve.png")
             pdf.add_page()
             pdf.chapter_title(f"Precision-Recall Curve for {model_name}")
-            pdf.add_image(f"{model_name}_precision_recall_curve.png")
+            with open(f"{model_name}_precision_recall_curve.png", "rb") as image_file:
+                pdf.image(image_file.read(), x = None, y = None, w = 150, h = 150)
 
         if "Feature Importance" in graph_options and hasattr(metrics["model"], "feature_importances_"):
             feature_importance = pd.DataFrame({
@@ -336,7 +340,8 @@ if st.sidebar.button("Save Report to PDF"):
             fig.savefig(f"{model_name}_feature_importance.png")
             pdf.add_page()
             pdf.chapter_title(f"Feature Importance for {model_name}")
-            pdf.add_image(f"{model_name}_feature_importance.png")
+            with open(f"{model_name}_feature_importance.png", "rb") as image_file:
+                pdf.image(image_file.read(), x = None, y = None, w = 150, h = 150)
 
     if "Model Performance Comparison" in graph_options:
         fig, ax = plt.subplots()
@@ -345,13 +350,15 @@ if st.sidebar.button("Save Report to PDF"):
         fig.savefig("model_performance_comparison.png")
         pdf.add_page()
         pdf.chapter_title("Model Performance Comparison")
-        pdf.add_image("model_performance_comparison.png")
+        with open("model_performance_comparison.png", "rb") as image_file:
+            pdf.image(image_file.read(), x = None, y = None, w = 150, h = 150)
 
-    pdf_file_path = '/mnt/data/als_detection_model_report.pdf'
-    pdf.output(pdf_file_path)
+    pdf_output = BytesIO()
+    pdf.output(pdf_output)
+    pdf_output.seek(0)
 
     st.write("### Report saved successfully!")
-    st.write(f"[Download the report](sandbox:{pdf_file_path})")
+    st.download_button(label="Download the report", data=pdf_output, file_name="als_detection_model_report.pdf", mime="application/pdf")
 
 elif menu_option == "Accessibility Settings":
     font_size = st.sidebar.slider("Adjust Font Size", min_value=10, max_value=30, value=16)
