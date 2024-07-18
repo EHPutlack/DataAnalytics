@@ -139,6 +139,8 @@ for model_name, model in models.items():
         "ROC AUC": roc_auc
     })
 
+performance_df = pd.DataFrame(performance_metrics)  # Ensure this is defined before using it
+
 # Sidebar menu
 st.sidebar.title("Menu Options")
 menu_option = st.sidebar.selectbox("Choose an option", ["Data Input Options", "Model Information", "Graphs", "Accessibility Settings"])
@@ -195,7 +197,6 @@ if menu_option == "Data Input Options":
 elif menu_option == "Model Information":
     st.write("## Model Performance Comparison")
     
-    performance_df = pd.DataFrame(performance_metrics)
     st.dataframe(performance_df)
 
     best_model = performance_df.loc[performance_df["Accuracy"].idxmax()]
@@ -362,7 +363,7 @@ if st.sidebar.button("Save Report to PDF"):
         temp_images.append(temp_image_path)
 
     pdf_output = BytesIO()
-    pdf.output(pdf_output, 'S').encode('latin1')
+    pdf.output(dest='S').encode('latin1')
     pdf_output.seek(0)
 
     st.write("### Report saved successfully!")
