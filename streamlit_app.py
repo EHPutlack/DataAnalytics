@@ -14,6 +14,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, confusion_matrix, roc_curve, precision_recall_curve
 from fpdf import FPDF
 from io import BytesIO
+import os
 
 # Define global list of parameters
 general_parameters = [
@@ -289,16 +290,19 @@ if st.sidebar.button("Save Report to PDF"):
     performance_summary = pd.DataFrame(performance_metrics).to_string(index=False)
     pdf.chapter_body(performance_summary)
 
+    temp_images = []
+
     for model_name, metrics in model_performance.items():
         if "Confusion Matrix" in graph_options:
             fig, ax = plt.subplots()
             sns.heatmap(metrics["confusion_matrix"], annot=True, fmt="d", cmap="Blues", ax=ax)
             ax.set_title(f"Confusion Matrix for {model_name}")
-            fig.savefig(f"{model_name}_confusion_matrix.png")
+            temp_image_path = f"{model_name}_confusion_matrix.png"
+            fig.savefig(temp_image_path)
             pdf.add_page()
             pdf.chapter_title(f"Confusion Matrix for {model_name}")
-            with open(f"{model_name}_confusion_matrix.png", "rb") as image_file:
-                pdf.image(image_file.read(), x = None, y = None, w = 150, h = 150)
+            pdf.add_image(temp_image_path)
+            temp_images.append(temp_image_path)
 
         if "ROC Curve" in graph_options:
             fig, ax = plt.subplots()
@@ -309,11 +313,12 @@ if st.sidebar.button("Save Report to PDF"):
             ax.set_xlabel("False Positive Rate")
             ax.set_ylabel("True Positive Rate")
             ax.legend(loc="lower right")
-            fig.savefig(f"{model_name}_roc_curve.png")
+            temp_image_path = f"{model_name}_roc_curve.png"
+            fig.savefig(temp_image_path)
             pdf.add_page()
             pdf.chapter_title(f"ROC Curve for {model_name}")
-            with open(f"{model_name}_roc_curve.png", "rb") as image_file:
-                pdf.image(image_file.read(), x = None, y = None, w = 150, h = 150)
+            pdf.add_image(temp_image_path)
+            temp_images.append(temp_image_path)
 
         if "Precision-Recall Curve" in graph_options:
             fig, ax = plt.subplots()
@@ -323,11 +328,12 @@ if st.sidebar.button("Save Report to PDF"):
             ax.set_xlabel("Recall")
             ax.set_ylabel("Precision")
             ax.legend(loc="lower left")
-            fig.savefig(f"{model_name}_precision_recall_curve.png")
+            temp_image_path = f"{model_name}_precision_recall_curve.png"
+            fig.savefig(temp_image_path)
             pdf.add_page()
             pdf.chapter_title(f"Precision-Recall Curve for {model_name}")
-            with open(f"{model_name}_precision_recall_curve.png", "rb") as image_file:
-                pdf.image(image_file.read(), x = None, y = None, w = 150, h = 150)
+            pdf.add_image(temp_image_path)
+            temp_images.append(temp_image_path)
 
         if "Feature Importance" in graph_options and hasattr(metrics["model"], "feature_importances_"):
             feature_importance = pd.DataFrame({
@@ -337,21 +343,23 @@ if st.sidebar.button("Save Report to PDF"):
             fig, ax = plt.subplots()
             sns.barplot(x="Importance", y="Feature", data=feature_importance, ax=ax)
             ax.set_title(f"Feature Importance for {model_name}")
-            fig.savefig(f"{model_name}_feature_importance.png")
+            temp_image_path = f"{model_name}_feature_importance.png"
+            fig.savefig(temp_image_path)
             pdf.add_page()
             pdf.chapter_title(f"Feature Importance for {model_name}")
-            with open(f"{model_name}_feature_importance.png", "rb") as image_file:
-                pdf.image(image_file.read(), x = None, y = None, w = 150, h = 150)
+            pdf.add_image(temp_image_path)
+            temp_images.append(temp_image_path)
 
     if "Model Performance Comparison" in graph_options:
         fig, ax = plt.subplots()
         performance_df.plot(kind="bar", x="Model", y=["Accuracy", "Precision", "Recall", "F1 Score", "ROC AUC"], ax=ax)
         ax.set_title("Model Performance Comparison")
-        fig.savefig("model_performance_comparison.png")
+        temp_image_path = "model_performance_comparison.png"
+        fig.savefig(temp_image_path)
         pdf.add_page()
         pdf.chapter_title("Model Performance Comparison")
-        with open("model_performance_comparison.png", "rb") as image_file:
-            pdf.image(image_file.read(), x = None, y = None, w = 150, h = 150)
+        pdf.add_image(temp_image_path)
+        temp_images.append(temp_image_path)
 
     pdf_output = BytesIO()
     pdf.output(pdf_output)
@@ -359,6 +367,9 @@ if st.sidebar.button("Save Report to PDF"):
 
     st.write("### Report saved successfully!")
     st.download_button(label="Download the report", data=pdf_output, file_name="als_detection_model_report.pdf", mime="application/pdf")
+
+    for temp_image_path in temp_images:
+        os.remove(temp_image_path)
 
 elif menu_option == "Accessibility Settings":
     font_size = st.sidebar.slider("Adjust Font Size", min_value=10, max_value=30, value=16)
