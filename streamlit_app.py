@@ -207,7 +207,7 @@ elif menu_option == "Model Information":
     st.write(f"F1 Score: {best_model['F1 Score']:.2f}")
     st.write(f"ROC AUC: {best_model['ROC AUC']:.2f}")
 
-    st.write("### Model Performance Comparison")
+    st.write("### Plotting the Model Performance Comparison")
     fig, ax = plt.subplots()
     performance_df.plot(kind="bar", x="Model", y=["Accuracy", "Precision", "Recall", "F1 Score", "ROC AUC"], ax=ax)
     ax.set_title("Model Performance Comparison")
