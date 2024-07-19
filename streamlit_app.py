@@ -145,17 +145,6 @@ performance_df = pd.DataFrame(performance_metrics)  # Ensure this is defined bef
 st.sidebar.title("Menu Options")
 menu_option = st.sidebar.selectbox("Choose an option", ["Data Input Options", "Model Information", "Graphs", "Accessibility Settings"])
 
-# Callback function to update session state with uploaded CSV data
-def update_session_state():
-    uploaded_file = st.session_state['uploaded_file']
-    if uploaded_file is not None:
-        patient_df = pd.read_csv(uploaded_file)
-        if set(parameters).issubset(patient_df.columns):
-            for param in parameters:
-                st.session_state[param] = float(patient_df[param].values[0])
-        else:
-            st.write("Error: The uploaded CSV file does not contain the required columns.")
-
 if menu_option == "Data Input Options":
     data_input_option = st.sidebar.selectbox("Select Data Input Method", ["Manual Entry", "CSV Upload", "Example Data"])
 
@@ -163,10 +152,14 @@ if menu_option == "Data Input Options":
         st.write("## Enter new patient data")
 
         # File uploader for single patient CSV
-        uploaded_file = st.file_uploader("Upload CSV for one patient", type="csv", key="uploaded_file")
-        if uploaded_file:
-            st.session_state['uploaded_file'] = uploaded_file
-            update_session_state()
+        uploaded_file = st.file_uploader("Upload CSV for one patient", type="csv")
+        if uploaded_file is not None:
+            patient_df = pd.read_csv(uploaded_file)
+            if set(parameters).issubset(patient_df.columns):
+                for param in parameters:
+                    st.session_state[param] = float(patient_df[param].values[0])
+            else:
+                st.write("Error: The uploaded CSV file does not contain the required columns.")
 
         new_data = []
         for param in parameters:
