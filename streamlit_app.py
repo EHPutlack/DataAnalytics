@@ -207,9 +207,15 @@ elif menu_option == "Model Information":
     st.write(f"F1 Score: {best_model['F1 Score']:.2f}")
     st.write(f"ROC AUC: {best_model['ROC AUC']:.2f}")
 
+    st.write("### Model Performance Comparison")
+    fig, ax = plt.subplots()
+    performance_df.plot(kind="bar", x="Model", y=["Accuracy", "Precision", "Recall", "F1 Score", "ROC AUC"], ax=ax)
+    ax.set_title("Model Performance Comparison")
+    st.pyplot(fig)
+
 elif menu_option == "Graphs":
     st.write("## Select Graphs to Display")
-    graph_options = st.sidebar.multiselect("Select Graphs", ["Confusion Matrix", "ROC Curve", "Precision-Recall Curve", "Feature Importance", "Model Performance Comparison"])
+    graph_options = st.sidebar.multiselect("Select Graphs", ["Confusion Matrix", "ROC Curve", "Precision-Recall Curve", "Feature Importance"])
 
     for model_name, metrics in model_performance.items():
         if "Confusion Matrix" in graph_options:
@@ -253,13 +259,6 @@ elif menu_option == "Graphs":
             fig, ax = plt.subplots()
             sns.barplot(x="Importance", y="Feature", data=feature_importance, ax=ax)
             ax.set_title(f"Feature Importance for {model_name}")
-            st.pyplot(fig)
-
-        if "Model Performance Comparison" in graph_options:
-            st.write("### Model Performance Comparison")
-            fig, ax = plt.subplots()
-            performance_df.plot(kind="bar", x="Model", y=["Accuracy", "Precision", "Recall", "F1 Score", "ROC AUC"], ax=ax)
-            ax.set_title("Model Performance Comparison")
             st.pyplot(fig)
 
 # Allow user to save a comprehensive report to PDF
