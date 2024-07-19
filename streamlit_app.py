@@ -143,10 +143,11 @@ performance_df = pd.DataFrame(performance_metrics)  # Ensure this is defined bef
 
 # Sidebar menu
 st.sidebar.title("Menu Options")
-menu_option = st.sidebar.selectbox("Choose an option", ["Data Input Options", "Model Information", "Graphs", "Accessibility Settings"])
+menu_option = st.sidebar.radio("Choose an option", ["Data Input", "Model Information", "Graphs", "Accessibility Settings"])
 
-if menu_option == "Data Input Options":
-    data_input_option = st.sidebar.selectbox("Select Data Input Method", ["Manual Entry", "CSV Upload", "Example Data"])
+if menu_option == "Data Input":
+    st.sidebar.header("Data Input Options")
+    data_input_option = st.sidebar.radio("Select Data Input Method", ["Manual Entry", "CSV Upload", "Example Data"])
 
     if data_input_option == "Manual Entry":
         st.write("## Enter new patient data")
@@ -225,7 +226,7 @@ elif menu_option == "Model Information":
     st.pyplot(fig)
 
 elif menu_option == "Graphs":
-    st.write("## Select Graphs to Display")
+    st.sidebar.header("Graph Options")
     graph_options = st.sidebar.multiselect("Select Graphs", ["Confusion Matrix", "ROC Curve", "Precision-Recall Curve", "Feature Importance"])
 
     for model_name, metrics in model_performance.items():
@@ -383,16 +384,17 @@ if st.sidebar.button("Save Report to PDF"):
         os.remove(temp_image_path)
 
 elif menu_option == "Accessibility Settings":
+    st.sidebar.header("Accessibility Settings")
     font_size = st.sidebar.slider("Adjust Font Size", min_value=10, max_value=30, value=16)
     st.write(f"<style>body {{font-size: {font_size}px;}}</style>", unsafe_allow_html=True)
 
-    color_theme = st.sidebar.selectbox("Select Color Theme", ["Default", "High Contrast", "Colorblind Friendly"])
+    color_theme = st.sidebar.radio("Select Color Theme", ["Default", "High Contrast", "Colorblind Friendly"])
     if color_theme == "High Contrast":
         st.write("<style>body {background-color: black; color: white;}</style>", unsafe_allow_html=True)
     elif color_theme == "Colorblind Friendly":
         st.write("<style>body {background-color: white; color: black;}</style>", unsafe_allow_html=True)
 
-    language = st.sidebar.selectbox("Select Language", ["English", "Spanish", "French"])
+    language = st.sidebar.radio("Select Language", ["English", "Spanish", "French"])
     if language == "Spanish":
         st.write("Idioma seleccionado: Español")
     elif language == "French":
