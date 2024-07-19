@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, AdaBoostClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
@@ -18,16 +18,16 @@ import os
 
 # Define global list of parameters
 general_parameters = [
-    'Heart Rate', 'Blood Pressure Systolic', 'Blood Pressure Diastolic', 
-    'Respiratory Rate', 'Oxygen Saturation', 'Temperature', 'Weight', 
-    'Height', 'BMI', 'Blood Glucose', 'Cholesterol', 'HDL', 'LDL', 
-    'Triglycerides', 'Hemoglobin', 'Hematocrit', 'WBC Count', 
-    'RBC Count', 'Platelet Count', 'Creatinine', 'BUN', 'Sodium', 
+    'Heart Rate', 'Blood Pressure Systolic', 'Blood Pressure Diastolic',
+    'Respiratory Rate', 'Oxygen Saturation', 'Temperature', 'Weight',
+    'Height', 'BMI', 'Blood Glucose', 'Cholesterol', 'HDL', 'LDL',
+    'Triglycerides', 'Hemoglobin', 'Hematocrit', 'WBC Count',
+    'RBC Count', 'Platelet Count', 'Creatinine', 'BUN', 'Sodium',
     'Potassium', 'Calcium', 'Magnesium'
 ]
 
 als_specific_parameters = [
-    'Muscle Strength', 'Motor Function Score', 'Speech Clarity', 
+    'Muscle Strength', 'Motor Function Score', 'Speech Clarity',
     'Swallowing Function', 'Respiratory Capacity'
 ]
 
@@ -37,7 +37,7 @@ parameters = general_parameters + als_specific_parameters
 @st.cache_data
 def create_realistic_data(num_patients=1000):
     np.random.seed(0)
-    
+
     # Generating realistic data distributions
     data = np.column_stack([
         np.random.normal(70, 10, num_patients),        # Heart Rate
@@ -71,8 +71,8 @@ def create_realistic_data(num_patients=1000):
         np.random.normal(40, 10, num_patients),        # Swallowing Function
         np.random.normal(30, 10, num_patients),        # Respiratory Capacity
     ])
-    
-    labels = np.concatenate([np.ones(num_patients//2), np.zeros(num_patients//2)])
+
+    labels = np.concatenate([np.ones(num_patients // 2), np.zeros(num_patients // 2)])
     df = pd.DataFrame(data, columns=parameters)
     df['ALS'] = labels
     return df
@@ -111,13 +111,13 @@ for model_name, model in models.items():
     model.fit(X_train, y_train)
     y_pred = model.predict(X_test)
     y_prob = model.predict_proba(X_test)[:, 1] if hasattr(model, "predict_proba") else [0] * len(y_test)
-    
+
     accuracy = accuracy_score(y_test, y_pred)
     precision = precision_score(y_test, y_pred)
     recall = recall_score(y_test, y_pred)
     f1 = f1_score(y_test, y_pred)
     roc_auc = roc_auc_score(y_test, y_prob)
-    
+
     model_performance[model_name] = {
         "model": model,
         "accuracy": accuracy,
@@ -129,7 +129,7 @@ for model_name, model in models.items():
         "roc_curve": roc_curve(y_test, y_prob),
         "precision_recall_curve": precision_recall_curve(y_test, y_prob)
     }
-    
+
     performance_metrics.append({
         "Model": model_name,
         "Accuracy": accuracy,
@@ -145,14 +145,28 @@ performance_df = pd.DataFrame(performance_metrics)  # Ensure this is defined bef
 st.sidebar.title("Menu Options")
 menu_option = st.sidebar.selectbox("Choose an option", ["Data Input Options", "Model Information", "Graphs", "Accessibility Settings"])
 
+# Callback function to update session state with uploaded CSV data
+def update_session_state(uploaded_file):
+    if uploaded_file is not None:
+        patient_df = pd.read_csv(uploaded_file)
+        if set(parameters).issubset(patient_df.columns):
+            for param in parameters:
+                st.session_state[param] = patient_df[param].values[0]
+        else:
+            st.write("Error: The uploaded CSV file does not contain the required columns.")
+
 if menu_option == "Data Input Options":
     data_input_option = st.sidebar.selectbox("Select Data Input Method", ["Manual Entry", "CSV Upload", "Example Data"])
-    
+
     if data_input_option == "Manual Entry":
         st.write("## Enter new patient data")
+
+        # File uploader for single patient CSV
+        uploaded_file = st.file_uploader("Upload CSV for one patient", type="csv", on_change=update_session_state, key="file_uploader")
+
         new_data = []
         for param in parameters:
-            value = st.number_input(f"{param}", min_value=0.0, max_value=200.0, value=50.0)
+            value = st.number_input(f"{param}", min_value=0.0, max_value=200.0, value=st.session_state.get(param, 50.0))
             new_data.append(value)
 
         if st.button("Predict ALS"):
@@ -165,7 +179,7 @@ if menu_option == "Data Input Options":
                 st.write("The patient is predicted to have ALS.")
             else:
                 st.write("The patient is predicted not to have ALS.")
-    
+
     elif data_input_option == "CSV Upload":
         uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
 
@@ -181,7 +195,7 @@ if menu_option == "Data Input Options":
                 st.dataframe(new_data)
             else:
                 st.write("Error: The uploaded CSV file does not contain the required columns.")
-    
+
     elif data_input_option == "Example Data":
         st.write("Loading example data...")
         example_data = create_realistic_data(10)
@@ -196,7 +210,7 @@ if menu_option == "Data Input Options":
 
 elif menu_option == "Model Information":
     st.write("## Model Performance Comparison")
-    
+
     st.dataframe(performance_df)
 
     best_model = performance_df.loc[performance_df["Accuracy"].idxmax()]
@@ -264,7 +278,7 @@ elif menu_option == "Graphs":
 # Allow user to save a comprehensive report to PDF
 if st.sidebar.button("Save Report to PDF"):
     graph_options = st.sidebar.multiselect("Select Graphs for PDF", ["Confusion Matrix", "ROC Curve", "Precision-Recall Curve", "Feature Importance", "Model Performance Comparison"])
-    
+
     class PDF(FPDF):
         def header(self):
             self.set_font('Arial', 'B', 12)
@@ -281,11 +295,11 @@ if st.sidebar.button("Save Report to PDF"):
             self.ln()
 
         def add_image(self, image_path):
-            self.image(image_path, x = None, y = None, w = 150, h = 150)
+            self.image(image_path, x=None, y=None, w=150, h=150)
 
     pdf = PDF()
     pdf.add_page()
-    
+
     pdf.chapter_title("Model Performance Comparison")
     performance_summary = pd.DataFrame(performance_metrics).to_string(index=False)
     pdf.chapter_body(performance_summary)
@@ -362,7 +376,7 @@ if st.sidebar.button("Save Report to PDF"):
         temp_images.append(temp_image_path)
 
     pdf_output = BytesIO()
-    pdf.output(dest='S').encode('latin1')
+    pdf.output(pdf_output)
     pdf_output.seek(0)
 
     st.write("### Report saved successfully!")
@@ -374,13 +388,13 @@ if st.sidebar.button("Save Report to PDF"):
 elif menu_option == "Accessibility Settings":
     font_size = st.sidebar.slider("Adjust Font Size", min_value=10, max_value=30, value=16)
     st.write(f"<style>body {{font-size: {font_size}px;}}</style>", unsafe_allow_html=True)
-    
+
     color_theme = st.sidebar.selectbox("Select Color Theme", ["Default", "High Contrast", "Colorblind Friendly"])
     if color_theme == "High Contrast":
         st.write("<style>body {background-color: black; color: white;}</style>", unsafe_allow_html=True)
     elif color_theme == "Colorblind Friendly":
         st.write("<style>body {background-color: white; color: black;}</style>", unsafe_allow_html=True)
-    
+
     language = st.sidebar.selectbox("Select Language", ["English", "Spanish", "French"])
     if language == "Spanish":
         st.write("Idioma seleccionado: Español")
