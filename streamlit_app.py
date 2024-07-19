@@ -100,7 +100,7 @@ models = {
     "Decision Tree": DecisionTreeClassifier(random_state=0),
     "Naive Bayes": GaussianNB(),
     "Gradient Boosting": GradientBoostingClassifier(random_state=0),
-    "AdaBoost": AdaBoostClassifier(random_state=0)
+    "AdaBoost": AdaBoostClassifier(algorithm="SAMME", random_state=0)  # Updated to use SAMME algorithm
 }
 
 # Train models and calculate performance metrics
@@ -152,7 +152,7 @@ def update_session_state():
         patient_df = pd.read_csv(uploaded_file)
         if set(parameters).issubset(patient_df.columns):
             for param in parameters:
-                st.session_state[param] = patient_df[param].values[0]
+                st.session_state[param] = float(patient_df[param].values[0])
         else:
             st.write("Error: The uploaded CSV file does not contain the required columns.")
 
@@ -165,6 +165,7 @@ if menu_option == "Data Input Options":
         # File uploader for single patient CSV
         uploaded_file = st.file_uploader("Upload CSV for one patient", type="csv", key="uploaded_file")
         if uploaded_file:
+            st.session_state['uploaded_file'] = uploaded_file
             update_session_state()
 
         new_data = []
