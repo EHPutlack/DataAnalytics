@@ -163,7 +163,7 @@ if menu_option == "Data Input Options":
 
         new_data = []
         for param in parameters:
-            value = st.number_input(f"{param}", min_value=0.0, max_value=200.0, value=st.session_state.get(param, 50.0))
+            value = st.number_input(f"{param}", min_value=0.0, max_value=1000000000.0, value=st.session_state.get(param, 50.0))
             new_data.append(value)
 
         if st.button("Predict ALS"):
