@@ -146,7 +146,8 @@ st.sidebar.title("Menu Options")
 menu_option = st.sidebar.selectbox("Choose an option", ["Data Input Options", "Model Information", "Graphs", "Accessibility Settings"])
 
 # Callback function to update session state with uploaded CSV data
-def update_session_state(uploaded_file):
+def update_session_state():
+    uploaded_file = st.session_state['uploaded_file']
     if uploaded_file is not None:
         patient_df = pd.read_csv(uploaded_file)
         if set(parameters).issubset(patient_df.columns):
@@ -162,7 +163,9 @@ if menu_option == "Data Input Options":
         st.write("## Enter new patient data")
 
         # File uploader for single patient CSV
-        uploaded_file = st.file_uploader("Upload CSV for one patient", type="csv", on_change=update_session_state, key="file_uploader")
+        uploaded_file = st.file_uploader("Upload CSV for one patient", type="csv", key="uploaded_file")
+        if uploaded_file:
+            update_session_state()
 
         new_data = []
         for param in parameters:
