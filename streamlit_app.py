@@ -156,6 +156,7 @@ if menu_option == "Data Input":
 
         # File uploader for single patient CSV
         uploaded_file = st.file_uploader("Upload CSV for one patient", type="csv")
+        patient_df = None
         if uploaded_file is not None:
             patient_df = pd.read_csv(uploaded_file)
             if set(parameters).issubset(patient_df.columns):
@@ -163,12 +164,17 @@ if menu_option == "Data Input":
                     st.session_state[param] = float(patient_df[param].values[0])
             else:
                 st.write("Error: The uploaded CSV file does not contain the required columns.")
-
+    
         new_data = []
         for param in parameters:
             value = st.number_input(f"{param}", min_value=0.0, max_value=1000000000.0, value=st.session_state.get(param, 50.0))
             new_data.append(value)
-
+    
+        # Display the patient data below the number input options
+        if uploaded_file is not None and patient_df is not None:
+            st.write("### Uploaded Patient Data")
+            st.dataframe(patient_df)
+    
         if st.button("Predict ALS"):
             new_data = np.array(new_data).reshape(1, -1)
             new_data_scaled = scaler.transform(new_data)
@@ -179,6 +185,7 @@ if menu_option == "Data Input":
                 st.write("The patient is predicted to have ALS.")
             else:
                 st.write("The patient is predicted not to have ALS.")
+
 
     elif data_input_option == "CSV Upload":
         uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
