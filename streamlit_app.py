@@ -78,6 +78,9 @@ def create_realistic_data(num_patients=1000):
     df = pd.DataFrame(data, columns=parameters)
     df['ALS'] = labels
     return df
+    
+# Load the data into a database
+df = create_realistic_data()
 
 # Split the data into training and test sets
 X = df.drop(columns=['ALS'])
