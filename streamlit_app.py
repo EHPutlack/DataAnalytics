@@ -188,7 +188,7 @@ if menu_option == "Data Input":
 
 
     elif data_input_option == "CSV Upload":
-        uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
+        uploaded_file = st.file_uploader("## Choose a CSV file", type="csv")
 
         if uploaded_file is not None:
             new_data = pd.read_csv(uploaded_file)
