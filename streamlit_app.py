@@ -195,7 +195,7 @@ if menu_option == "Data Input":
                 st.write("Error: The uploaded CSV file does not contain the required columns.")
 
     elif data_input_option == "Example Data":
-        st.write("Loading example data...")
+        st.write("10 Example Patients")
         example_data = create_realistic_data(10)
         st.dataframe(example_data)
         st.write("## Predictions for example data")
