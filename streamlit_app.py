@@ -72,7 +72,9 @@ def create_realistic_data(num_patients=1000):
         np.random.normal(30, 10, num_patients),        # Respiratory Capacity
     ])
 
-    labels = np.concatenate([np.ones(num_patients // 2), np.zeros(num_patients // 2)])
+    # Ensure labels length matches num_patients
+    half_patients = num_patients // 2
+    labels = np.concatenate([np.ones(half_patients), np.zeros(num_patients - half_patients)])
     df = pd.DataFrame(data, columns=parameters)
     df['ALS'] = labels
     return df
@@ -196,16 +198,16 @@ if menu_option == "Data Input":
 
     elif data_input_option == "Example Data":
         st.write("## View Example Patients")
-    
+        
         num_example_patients = st.number_input("Enter the number of example patients to view:", min_value=1, max_value=100, value=10, step=1)
-
+    
         if st.button("Generate Example Data"):
             # Ensure the number of patients is an integer
             num_example_patients = int(num_example_patients)
-
+    
             example_data = create_realistic_data(num_patients=num_example_patients)
             st.dataframe(example_data)
-        
+            
             st.write("## Predictions for example data")
             example_data_scaled = scaler.transform(example_data[parameters])
             model_choice = st.sidebar.selectbox("Choose a model", list(models.keys()))
