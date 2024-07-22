@@ -79,10 +79,6 @@ def create_realistic_data(num_patients=1000):
     df['ALS'] = labels
     return df
 
-# Load and display the realistic fake data
-df = create_realistic_data()
-st.dataframe(df.head())
-
 # Split the data into training and test sets
 X = df.drop(columns=['ALS'])
 y = df['ALS']
