@@ -195,9 +195,9 @@ if menu_option == "Data Input":
                 st.write("Error: The uploaded CSV file does not contain the required columns.")
 
     elif data_input_option == "Example Data":
-    st.write("## View Example Patients")
+        st.write("## View Example Patients")
     
-    num_example_patients = st.number_input("Enter the number of example patients to view:", min_value=1, max_value=100, value=10)
+        num_example_patients = st.number_input("Enter the number of example patients to view:", min_value=1, max_value=100, value=10)
     
         if st.button("Generate Example Data"):
             example_data = create_realistic_data(num_patients=num_example_patients)
