@@ -24,7 +24,7 @@ def local_css(file_name):
 local_css("styles.css")
 
 # Add logo
-st.image("Logo.png", width=150)
+st.image("Logo.PNG", width=150)
 
 # Define global list of parameters
 general_parameters = [
