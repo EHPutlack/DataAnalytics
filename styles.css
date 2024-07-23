@@ -1,0 +1,16 @@
+/* styles.css */
+body {
+    background-color: #f0f0f0;
+}
+
+.stButton button {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.stAlert {
+    background-color: #FFCC00;
+    color: #333;
+}
+
+/* Add more custom styles as needed */
