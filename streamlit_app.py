@@ -262,7 +262,7 @@ elif menu_option == "Graphs":
         st.write("### ROC Curve")
         st.write("""
         The ROC (Receiver Operating Characteristic) Curve is a graphical representation of a model's diagnostic ability.
-        It plots the true positive rate (sensitivity) against the false positive rate (1-specificity) at various threshold settings.
+        It plots the true positive rate (sensitivity) against the false positive rate (1 - specificity) at various threshold settings.
         The area under the curve (AUC) represents the model's ability to distinguish between classes.
         """)
 
