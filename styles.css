@@ -15,11 +15,11 @@ body {
 
 /* Styles for titles */
 .stMarkdown h1 {
-    color: #333; /* Dark text color */
+    color: #fff; /* Dark text color */
 }
 
 /* Styles for subtitles */
 .stMarkdown h2 {
-    color: #555; /* Slightly lighter text color */
+    color: #fff; /* Slightly lighter text color */
 }
 
