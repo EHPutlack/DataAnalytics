@@ -24,7 +24,7 @@ def local_css(file_name):
 local_css("styles.css")
 
 # Add logo
-logo_path = "/mnt/data/Logo.PNG"
+logo_path = "/OneDrive/mitosenseinc.com/Screenshots/Logo.PNG"
 st.markdown(
     """
     <style>
