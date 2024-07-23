@@ -245,6 +245,7 @@ elif menu_option == "Model Information":
     st.pyplot(fig)
 
 elif menu_option == "Graphs":
+    st.write("## Graphs")
     st.sidebar.header("Graph Options")
     graph_options = st.sidebar.multiselect("Select Graphs", ["Confusion Matrix", "ROC Curve", "Precision-Recall Curve", "Feature Importance"])
 
