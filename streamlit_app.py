@@ -248,6 +248,37 @@ elif menu_option == "Graphs":
     st.write("## Graphs")
     st.sidebar.header("Graph Options")
     graph_options = st.sidebar.multiselect("Select Graphs", ["Confusion Matrix", "ROC Curve", "Precision-Recall Curve", "Feature Importance"])
+    show_graph_descriptions = st.sidebar.checkbox("Show Graph Descriptions")
+
+    if show_graph_descriptions:
+        st.write("## Graph Descriptions")
+        
+        st.write("### Confusion Matrix")
+        st.write("""
+        A Confusion Matrix is a table used to evaluate the performance of a classification model.
+        It shows the actual versus predicted classifications and is useful for understanding the number of true positives, true negatives, false positives, and false negatives.
+        """)
+
+        st.write("### ROC Curve")
+        st.write("""
+        The ROC (Receiver Operating Characteristic) Curve is a graphical representation of a model's diagnostic ability.
+        It plots the true positive rate (sensitivity) against the false positive rate (1-specificity) at various threshold settings.
+        The area under the curve (AUC) represents the model's ability to distinguish between classes.
+        """)
+
+        st.write("### Precision-Recall Curve")
+        st.write("""
+        The Precision-Recall Curve is a plot that shows the trade-off between precision and recall for different threshold values.
+        Precision is the ratio of true positive predictions to the total predicted positives, while recall is the ratio of true positive predictions to all actual positives.
+        This curve is particularly useful for imbalanced datasets.
+        """)
+
+        st.write("### Feature Importance")
+        st.write("""
+        Feature Importance indicates the contribution of each feature to the prediction made by the model.
+        It helps in understanding which features are most influential in the model's decision-making process.
+        This graph is typically available for tree-based models like Random Forest and Gradient Boosting.
+        """)
 
     for model_name, metrics in model_performance.items():
         if "Confusion Matrix" in graph_options:
