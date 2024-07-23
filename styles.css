@@ -13,4 +13,13 @@ body {
     color: black;
 }
 
-/* Add more custom styles as needed */
+/* Styles for titles */
+.stMarkdown h1 {
+    color: #333; /* Dark text color */
+}
+
+/* Styles for subtitles */
+.stMarkdown h2 {
+    color: #555; /* Slightly lighter text color */
+}
+
