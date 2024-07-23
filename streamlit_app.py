@@ -16,6 +16,11 @@ from fpdf import FPDF
 from io import BytesIO
 import os
 
+
+body {
+    background-color: #242463;
+}
+
 # Define global list of parameters
 general_parameters = [
     'Heart Rate', 'Blood Pressure Systolic', 'Blood Pressure Diastolic',
