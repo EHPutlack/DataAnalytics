@@ -151,7 +151,7 @@ if menu_option == "Data Input":
     data_input_option = st.sidebar.radio("Select Data Input Method", ["Manual Entry", "CSV Upload", "Example Data"])
 
     if data_input_option == "Manual Entry":
-        st.write("## Enter new patient data")
+        st.write("### Enter new patient data")
 
         # File uploader for single patient CSV
         uploaded_file = st.file_uploader("Upload CSV for one patient", type="csv")
@@ -187,7 +187,7 @@ if menu_option == "Data Input":
 
 
     elif data_input_option == "CSV Upload":
-        st.write("## Choose a CSV file")
+        st.write("### Choose a CSV file")
         uploaded_file = st.file_uploader("Upload", type="csv")
 
         if uploaded_file is not None:
@@ -204,7 +204,7 @@ if menu_option == "Data Input":
                 st.write("Error: The uploaded CSV file does not contain the required columns.")
 
     elif data_input_option == "Example Data":
-        st.write("## View Example Patients")
+        st.write("### View Example Patients")
         
         num_example_patients = st.number_input("Enter the number of example patients to view:", min_value=1, max_value=100, value=10, step=1)
     
@@ -225,7 +225,7 @@ if menu_option == "Data Input":
 
 
 elif menu_option == "Model Information":
-    st.write("## Model Performance Comparison")
+    st.write("### Model Performance Comparison")
 
     st.dataframe(performance_df)
 
@@ -245,7 +245,7 @@ elif menu_option == "Model Information":
     st.pyplot(fig)
 
 elif menu_option == "Graphs":
-    st.write("## Graphs")
+    st.write("### Graphs")
     st.sidebar.header("Graph Options")
     graph_options = st.sidebar.multiselect("Select Graphs", ["Confusion Matrix", "ROC Curve", "Precision-Recall Curve", "Feature Importance"])
     show_graph_descriptions = st.sidebar.checkbox("Show Graph Descriptions")
