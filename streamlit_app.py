@@ -16,6 +16,13 @@ from fpdf import FPDF
 from io import BytesIO
 import os
 
+# Load CSS file
+def local_css(file_name):
+    with open(file_name) as f:
+        st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
+
+local_css("styles.css")
+
 # Define global list of parameters
 general_parameters = [
     'Heart Rate', 'Blood Pressure Systolic', 'Blood Pressure Diastolic',
