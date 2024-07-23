@@ -23,8 +23,28 @@ def local_css(file_name):
 
 local_css("styles.css")
 
-# Add logo
-st.image("Logo.PNG", width=100)
+# Add logo with custom CSS
+st.markdown(
+    """
+    <style>
+    .logo-container {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        position: fixed;
+        top: 10px;
+        left: 10px;
+    }
+    .logo-container img {
+        width: 100px;  /* Adjust the width as needed */
+    }
+    </style>
+    <div class="logo-container">
+        <img src="data:image/png;base64,{}" alt="Logo">
+    </div>
+    """.format(st.image("Logo.PNG", width=100, use_column_width='auto')),
+    unsafe_allow_html=True
+)
 
 # Define global list of parameters
 general_parameters = [
