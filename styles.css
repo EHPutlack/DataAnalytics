@@ -4,13 +4,9 @@
 }
 
 /* Custom styles for sidebar */
-.css-1d391kg {  /* Targeting the main sidebar container */
+.stSidebar {  /* Targeting the main sidebar container */
     background-color: #333; /* Dark background */
     color: #ffffff; /* White text */
-}
-
-.css-1d391kg .css-1v3fvcr { /* Targeting the inner part of the sidebar */
-    background-color: #444; /* Slightly lighter dark background */
 }
 
 .stButton button {
