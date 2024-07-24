@@ -364,7 +364,7 @@ elif menu_option == "Model Information":
             fig.savefig(temp_image_path)
             pdf.add_page()
             pdf.cell(200, 10, txt="Model Performance Comparison", ln=True, align="L")
-            pdf.image(temp_image_path, w=150, h=250)
+            pdf.image(temp_image_path, w=150, h=150)
             temp_images.append(temp_image_path)
 
         pdf_output = BytesIO()
