@@ -14,6 +14,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, confusion_matrix, roc_curve, precision_recall_curve
 from fpdf import FPDF
 from io import BytesIO
+import base64
 import os
 
 # Load CSS file
@@ -22,6 +23,35 @@ def local_css(file_name):
         st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
 
 local_css("styles.css")
+
+# Function to convert image to base64
+def img_to_base64(file_path):
+    with open(file_path, "rb") as img_file:
+        return base64.b64encode(img_file.read()).decode()
+
+# Add logo with custom CSS
+logo_base64 = img_to_base64("Logo.PNG")
+st.markdown(
+    f"""
+    <style>
+    .logo-container {{
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        position: fixed;
+        bottom: 50px;
+        right: 10px;
+    }}
+    .logo-container img {{
+        width: 100px;  /* Adjust the width as needed */
+    }}
+    </style>
+    <div class="logo-container">
+        <img src="data:image/png;base64,{logo_base64}" alt="Logo">
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
 # Define global list of parameters
 general_parameters = [
