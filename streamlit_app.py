@@ -12,7 +12,6 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.preprocessing import StandardScaler
-from streamlit_extras.styleable_container import styleable_container
 from sklearn.metrics import (accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, 
                              confusion_matrix, roc_curve, precision_recall_curve, matthews_corrcoef, 
                              balanced_accuracy_score, cohen_kappa_score, brier_score_loss, 
