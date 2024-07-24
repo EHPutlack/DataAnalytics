@@ -360,7 +360,7 @@ elif menu_option == "Model Information":
             performance_df.plot(kind="bar", x="Model", y=["Accuracy", "Precision", "Recall", "F1 Score", "ROC AUC"], ax=ax)
             ax.set_title("Model Performance Comparison")
             temp_image_path = "model_performance_comparison.png"
-            fig.savefig(temp_image_path)
+            fig.savefig(temp_image_path, bbox_inches='tight')
             pdf.add_page()
             pdf.cell(200, 10, txt="Model Performance Comparison", ln=True, align="L")
             pdf.image(temp_image_path, w=150, h=150)
