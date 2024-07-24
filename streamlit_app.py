@@ -183,7 +183,7 @@ performance_df = pd.DataFrame(performance_metrics)  # Ensure this is defined bef
 st.sidebar.title("Menu Options")
 menu_option = st.sidebar.radio("Choose an option", ["Data Input", "Model Information", "Graphs", "Accessibility Settings"])
 
-# Move the "Save Report to PDF" button to the sidebar
+# Saves the Report to a PDF
 if st.sidebar.button("Save Report to PDF"):
     graph_options = ["Confusion Matrix", "ROC Curve", "Precision-Recall Curve", "Feature Importance", "Model Performance Comparison"]
 
