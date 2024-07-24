@@ -359,6 +359,7 @@ elif menu_option == "Model Information":
             fig, ax = plt.subplots()
             performance_df.plot(kind="bar", x="Model", y=["Accuracy", "Precision", "Recall", "F1 Score", "ROC AUC"], ax=ax)
             ax.set_title("Model Performance Comparison")
+            ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.6), ncol=2)
             temp_image_path = "model_performance_comparison.png"
             fig.savefig(temp_image_path)
             pdf.add_page()
