@@ -183,6 +183,102 @@ performance_df = pd.DataFrame(performance_metrics)  # Ensure this is defined bef
 st.sidebar.title("Menu Options")
 menu_option = st.sidebar.radio("Choose an option", ["Data Input", "Model Information", "Graphs", "Accessibility Settings"])
 
+# Move the "Save Report to PDF" button to the sidebar
+if st.sidebar.button("Save Report to PDF"):
+    graph_options = ["Confusion Matrix", "ROC Curve", "Precision-Recall Curve", "Feature Importance", "Model Performance Comparison"]
+
+    pdf = FPDF()
+    pdf.add_page()
+
+    pdf.set_font("Arial", size=12)
+    pdf.cell(200, 10, txt="ALS Detection Model Report", ln=True, align="C")
+
+    pdf.cell(200, 10, txt="Model Performance Comparison", ln=True, align="L")
+    performance_summary = pd.DataFrame(performance_metrics).to_string(index=False)
+    pdf.multi_cell(0, 10, performance_summary)
+
+    temp_images = []
+
+    for model_name, metrics in model_performance.items():
+        if "Confusion Matrix" in graph_options:
+            fig, ax = plt.subplots(figsize=(8, 6))  # Adjust figure size as needed
+            sns.heatmap(metrics["confusion_matrix"], annot=True, fmt="d", cmap="Blues", ax=ax)
+            ax.set_title(f"Confusion Matrix for {model_name}")
+            temp_image_path = f"{model_name}_confusion_matrix.png"
+            fig.savefig(temp_image_path, bbox_inches='tight')
+            pdf.add_page()
+            pdf.cell(200, 10, txt=f"Confusion Matrix for {model_name}", ln=True, align="L")
+            pdf.image(temp_image_path, w=180)  # Adjust width as needed
+            temp_images.append(temp_image_path)
+
+        if "ROC Curve" in graph_options:
+            fig, ax = plt.subplots(figsize=(8, 6))  # Adjust figure size as needed
+            fpr, tpr, _ = metrics["roc_curve"]
+            ax.plot(fpr, tpr, label=f"{model_name} (AUC = {metrics['roc_auc']:.2f})")
+            ax.plot([0, 1], [0, 1], linestyle="--")
+            ax.set_title(f"ROC Curve for {model_name}")
+            ax.set_xlabel("False Positive Rate")
+            ax.set_ylabel("True Positive Rate")
+            ax.legend(loc="lower right")
+            temp_image_path = f"{model_name}_roc_curve.png"
+            fig.savefig(temp_image_path, bbox_inches='tight')
+            pdf.add_page()
+            pdf.cell(200, 10, txt=f"ROC Curve for {model_name}", ln=True, align="L")
+            pdf.image(temp_image_path, w=180)  # Adjust width as needed
+            temp_images.append(temp_image_path)
+
+        if "Precision-Recall Curve" in graph_options:
+            fig, ax = plt.subplots(figsize=(8, 6))  # Adjust figure size as needed
+            precision, recall, _ = metrics["precision_recall_curve"]
+            ax.plot(recall, precision, label=f"{model_name}")
+            ax.set_title(f"Precision-Recall Curve for {model_name}")
+            ax.set_xlabel("Recall")
+            ax.set_ylabel("Precision")
+            ax.legend(loc="lower left")
+            temp_image_path = f"{model_name}_precision_recall_curve.png"
+            fig.savefig(temp_image_path, bbox_inches='tight')
+            pdf.add_page()
+            pdf.cell(200, 10, txt=f"Precision-Recall Curve for {model_name}", ln=True, align="L")
+            pdf.image(temp_image_path, w=180)  # Adjust width as needed
+            temp_images.append(temp_image_path)
+
+        if "Feature Importance" in graph_options and hasattr(metrics["model"], "feature_importances_"):
+            feature_importance = pd.DataFrame({
+                'Feature': parameters,
+                'Importance': metrics["model"].feature_importances_
+            }).sort_values(by='Importance', ascending=False)
+            fig, ax = plt.subplots(figsize=(8, 6))  # Adjust figure size as needed
+            sns.barplot(x="Importance", y="Feature", data=feature_importance, ax=ax)
+            ax.set_title(f"Feature Importance for {model_name}")
+            temp_image_path = f"{model_name}_feature_importance.png"
+            fig.savefig(temp_image_path, bbox_inches='tight')
+            pdf.add_page()
+            pdf.cell(200, 10, txt=f"Feature Importance for {model_name}", ln=True, align="L")
+            pdf.image(temp_image_path, w=180)  # Adjust width as needed
+            temp_images.append(temp_image_path)
+
+    if "Model Performance Comparison" in graph_options:
+        fig, ax = plt.subplots(figsize=(8, 6))
+        performance_df.plot(kind="bar", x="Model", y=["Accuracy", "Precision", "Recall", "F1 Score", "ROC AUC"], ax=ax)
+        ax.set_title("Model Performance Comparison")
+        ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.6), ncol=2)
+        temp_image_path = "model_performance_comparison.png"
+        fig.savefig(temp_image_path, bbox_inches='tight')
+        pdf.add_page()
+        pdf.cell(200, 10, txt="Model Performance Comparison", ln=True, align="L")
+        pdf.image(temp_image_path, w=180)  # Adjust width as needed
+        temp_images.append(temp_image_path)
+
+    pdf_output = BytesIO()
+    pdf_output.write(pdf.output(dest='S').encode('latin1'))
+    pdf_output.seek(0)
+
+    st.sidebar.write("### Report saved successfully!")
+    st.sidebar.download_button(label="Download the report", data=pdf_output, file_name="als_detection_model_report.pdf", mime="application/pdf")
+
+    for temp_image_path in temp_images:
+        os.remove(temp_image_path)
+
 if menu_option == "Data Input":
     st.sidebar.header("Data Input Options")
     data_input_option = st.sidebar.radio("Select Data Input Method", ["Manual Entry", "CSV Upload", "Example Data"])
@@ -280,102 +376,6 @@ elif menu_option == "Model Information":
     ax.set_title("Model Performance Comparison")
     ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.6), ncol=2)  # Adjust the legend position
     st.pyplot(fig)
-    
-    # Allow user to save a comprehensive report to PDF
-    if st.button("Save Report to PDF"):
-        graph_options = ["Confusion Matrix", "ROC Curve", "Precision-Recall Curve", "Feature Importance", "Model Performance Comparison"]
-
-        pdf = FPDF()
-        pdf.add_page()
-
-        pdf.set_font("Arial", size=12)
-        pdf.cell(200, 10, txt="ALS Detection Model Report", ln=True, align="C")
-
-        pdf.cell(200, 10, txt="Model Performance Comparison", ln=True, align="L")
-        performance_summary = pd.DataFrame(performance_metrics).to_string(index=False)
-        pdf.multi_cell(0, 10, performance_summary)
-
-        temp_images = []
-
-        for model_name, metrics in model_performance.items():
-            if "Confusion Matrix" in graph_options:
-                fig, ax = plt.subplots(figsize=(8, 6))  # Adjust figure size as needed
-                sns.heatmap(metrics["confusion_matrix"], annot=True, fmt="d", cmap="Blues", ax=ax)
-                ax.set_title(f"Confusion Matrix for {model_name}")
-                temp_image_path = f"{model_name}_confusion_matrix.png"
-                fig.savefig(temp_image_path, bbox_inches='tight')
-                pdf.add_page()
-                pdf.cell(200, 10, txt=f"Confusion Matrix for {model_name}", ln=True, align="L")
-                pdf.image(temp_image_path, w=180)  # Adjust width as needed
-                temp_images.append(temp_image_path)
-
-            if "ROC Curve" in graph_options:
-                fig, ax = plt.subplots(figsize=(8, 6))  # Adjust figure size as needed
-                fpr, tpr, _ = metrics["roc_curve"]
-                ax.plot(fpr, tpr, label=f"{model_name} (AUC = {metrics['roc_auc']:.2f})")
-                ax.plot([0, 1], [0, 1], linestyle="--")
-                ax.set_title(f"ROC Curve for {model_name}")
-                ax.set_xlabel("False Positive Rate")
-                ax.set_ylabel("True Positive Rate")
-                ax.legend(loc="lower right")
-                temp_image_path = f"{model_name}_roc_curve.png"
-                fig.savefig(temp_image_path, bbox_inches='tight')
-                pdf.add_page()
-                pdf.cell(200, 10, txt=f"ROC Curve for {model_name}", ln=True, align="L")
-                pdf.image(temp_image_path, w=180)  # Adjust width as needed
-                temp_images.append(temp_image_path)
-
-            if "Precision-Recall Curve" in graph_options:
-                fig, ax = plt.subplots(figsize=(8, 6))  # Adjust figure size as needed
-                precision, recall, _ = metrics["precision_recall_curve"]
-                ax.plot(recall, precision, label=f"{model_name}")
-                ax.set_title(f"Precision-Recall Curve for {model_name}")
-                ax.set_xlabel("Recall")
-                ax.set_ylabel("Precision")
-                ax.legend(loc="lower left")
-                temp_image_path = f"{model_name}_precision_recall_curve.png"
-                fig.savefig(temp_image_path, bbox_inches='tight')
-                pdf.add_page()
-                pdf.cell(200, 10, txt=f"Precision-Recall Curve for {model_name}", ln=True, align="L")
-                pdf.image(temp_image_path, w=180)  # Adjust width as needed
-                temp_images.append(temp_image_path)
-
-            if "Feature Importance" in graph_options and hasattr(metrics["model"], "feature_importances_"):
-                feature_importance = pd.DataFrame({
-                    'Feature': parameters,
-                    'Importance': metrics["model"].feature_importances_
-                }).sort_values(by='Importance', ascending=False)
-                fig, ax = plt.subplots(figsize=(8, 6))  # Adjust figure size as needed
-                sns.barplot(x="Importance", y="Feature", data=feature_importance, ax=ax)
-                ax.set_title(f"Feature Importance for {model_name}")
-                temp_image_path = f"{model_name}_feature_importance.png"
-                fig.savefig(temp_image_path, bbox_inches='tight')
-                pdf.add_page()
-                pdf.cell(200, 10, txt=f"Feature Importance for {model_name}", ln=True, align="L")
-                pdf.image(temp_image_path, w=180)  # Adjust width as needed
-                temp_images.append(temp_image_path)
-
-        if "Model Performance Comparison" in graph_options:
-            fig, ax = plt.subplots(figsize=(8, 6))
-            performance_df.plot(kind="bar", x="Model", y=["Accuracy", "Precision", "Recall", "F1 Score", "ROC AUC"], ax=ax)
-            ax.set_title("Model Performance Comparison")
-            ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.6), ncol=2)
-            temp_image_path = "model_performance_comparison.png"
-            fig.savefig(temp_image_path, bbox_inches='tight')
-            pdf.add_page()
-            pdf.cell(200, 10, txt="Model Performance Comparison", ln=True, align="L")
-            pdf.image(temp_image_path, w=180)  # Adjust width as needed
-            temp_images.append(temp_image_path)
-
-        pdf_output = BytesIO()
-        pdf_output.write(pdf.output(dest='S').encode('latin1'))
-        pdf_output.seek(0)
-
-        st.write("### Report saved successfully!")
-        st.download_button(label="Download the report", data=pdf_output, file_name="als_detection_model_report.pdf", mime="application/pdf")
-
-        for temp_image_path in temp_images:
-            os.remove(temp_image_path)
 
 elif menu_option == "Graphs":
     st.write("# Graphs")
@@ -465,7 +465,7 @@ elif menu_option == "Accessibility Settings":
     color_theme = st.sidebar.radio("Select Color Theme", ["Default", "High Contrast", "Colorblind Friendly"])
     if color_theme == "High Contrast":
         st.write("<style>body {background-color: black; color: white;}</style>", unsafe_allow_html=True)
-    elif color_theme == "Colorblind Friendly":
+    elif color_theme is "Colorblind Friendly":
         st.write("<style>body {background-color: white; color: black;}</style>", unsafe_allow_html=True)
 
     language = st.sidebar.radio("Select Language", ["English", "Spanish", "French"])
