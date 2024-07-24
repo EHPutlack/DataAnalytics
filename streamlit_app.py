@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit_extras
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -12,7 +13,6 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, confusion_matrix, roc_curve, precision_recall_curve
-from streamlit_extras.styleable_container.styleable_container import styleable_container
 from fpdf import FPDF
 from io import BytesIO
 import base64
