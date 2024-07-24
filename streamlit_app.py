@@ -365,30 +365,15 @@ elif menu_option == "Graphs":
 if st.sidebar.button("Save Report to PDF"):
     graph_options = st.sidebar.multiselect("Select Graphs for PDF", ["Confusion Matrix", "ROC Curve", "Precision-Recall Curve", "Feature Importance", "Model Performance Comparison"])
 
-    class PDF(FPDF):
-        def header(self):
-            self.set_font('Arial', 'B', 12)
-            self.cell(0, 10, 'ALS Detection Model Report', 0, 1, 'C')
-
-        def chapter_title(self, title):
-            self.set_font('Arial', 'B', 12)
-            self.cell(0, 10, title, 0, 1, 'L')
-            self.ln(10)
-
-        def chapter_body(self, body):
-            self.set_font('Arial', '', 12)
-            self.multi_cell(0, 10, body)
-            self.ln()
-
-        def add_image(self, image_path):
-            self.image(image_path, x=None, y=None, w=150, h=150)
-
-    pdf = PDF()
+    pdf = FPDF()
     pdf.add_page()
 
-    pdf.chapter_title("Model Performance Comparison")
+    pdf.set_font("Arial", size=12)
+    pdf.cell(200, 10, txt="ALS Detection Model Report", ln=True, align="C")
+
+    pdf.cell(200, 10, txt="Model Performance Comparison", ln=True, align="L")
     performance_summary = pd.DataFrame(performance_metrics).to_string(index=False)
-    pdf.chapter_body(performance_summary)
+    pdf.multi_cell(0, 10, performance_summary)
 
     temp_images = []
 
@@ -400,8 +385,8 @@ if st.sidebar.button("Save Report to PDF"):
             temp_image_path = f"{model_name}_confusion_matrix.png"
             fig.savefig(temp_image_path)
             pdf.add_page()
-            pdf.chapter_title(f"Confusion Matrix for {model_name}")
-            pdf.add_image(temp_image_path)
+            pdf.cell(200, 10, txt=f"Confusion Matrix for {model_name}", ln=True, align="L")
+            pdf.image(temp_image_path, w=150, h=150)
             temp_images.append(temp_image_path)
 
         if "ROC Curve" in graph_options:
@@ -416,8 +401,8 @@ if st.sidebar.button("Save Report to PDF"):
             temp_image_path = f"{model_name}_roc_curve.png"
             fig.savefig(temp_image_path)
             pdf.add_page()
-            pdf.chapter_title(f"ROC Curve for {model_name}")
-            pdf.add_image(temp_image_path)
+            pdf.cell(200, 10, txt=f"ROC Curve for {model_name}", ln=True, align="L")
+            pdf.image(temp_image_path, w=150, h=150)
             temp_images.append(temp_image_path)
 
         if "Precision-Recall Curve" in graph_options:
@@ -431,8 +416,8 @@ if st.sidebar.button("Save Report to PDF"):
             temp_image_path = f"{model_name}_precision_recall_curve.png"
             fig.savefig(temp_image_path)
             pdf.add_page()
-            pdf.chapter_title(f"Precision-Recall Curve for {model_name}")
-            pdf.add_image(temp_image_path)
+            pdf.cell(200, 10, txt=f"Precision-Recall Curve for {model_name}", ln=True, align="L")
+            pdf.image(temp_image_path, w=150, h=150)
             temp_images.append(temp_image_path)
 
         if "Feature Importance" in graph_options and hasattr(metrics["model"], "feature_importances_"):
@@ -446,8 +431,8 @@ if st.sidebar.button("Save Report to PDF"):
             temp_image_path = f"{model_name}_feature_importance.png"
             fig.savefig(temp_image_path)
             pdf.add_page()
-            pdf.chapter_title(f"Feature Importance for {model_name}")
-            pdf.add_image(temp_image_path)
+            pdf.cell(200, 10, txt=f"Feature Importance for {model_name}", ln=True, align="L")
+            pdf.image(temp_image_path, w=150, h=150)
             temp_images.append(temp_image_path)
 
     if "Model Performance Comparison" in graph_options:
@@ -457,8 +442,8 @@ if st.sidebar.button("Save Report to PDF"):
         temp_image_path = "model_performance_comparison.png"
         fig.savefig(temp_image_path)
         pdf.add_page()
-        pdf.chapter_title("Model Performance Comparison")
-        pdf.add_image(temp_image_path)
+        pdf.cell(200, 10, txt="Model Performance Comparison", ln=True, align="L")
+        pdf.image(temp_image_path, w=150, h=150)
         temp_images.append(temp_image_path)
 
     pdf_output = BytesIO()
