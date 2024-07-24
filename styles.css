@@ -1,23 +1,29 @@
 /* styles.css */
-body {
+.main {
     background-color: #242463;
+}
+
+/* Custom styles for sidebar */
+.stSidebar {  /* Targeting the main sidebar container */
+    background-color: #333; /* Dark background */
+    color: #ffffff; /* White text */
 }
 
 .stButton button {
     background-color: #F3A122;
-    color: white;
+    color: #fff;
 }
 
 .stAlert {
-    background-color: #000000;
-    color: black;
+    background-color: #fff;
+    color: #fff;
 }
 
 .stHelp {
-    background-color: #000;
-    border-left: 6px solid #000;
+    background-color: #fff;
+    border-left: 6px solid #fff;
     padding: 10px;
-    color: #000;
+    color: #fff;
 }
 
 /* Styles for titles */
@@ -29,4 +35,3 @@ body {
 .stMarkdown h2 {
     color: #fff; /* Slightly lighter text color */
 }
-
