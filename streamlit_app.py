@@ -499,8 +499,12 @@ elif menu_option == "Graphs":
     graph_options = st.sidebar.multiselect("Select Graphs", ["Confusion Matrix", "ROC Curve", "Precision-Recall Curve", "Feature Importance"])
     selected_model = st.sidebar.selectbox("Select Model for Graphs", list(models.keys()))
     show_all_models = st.sidebar.button("Show All Models for Selected Graphs")
+    clear_graph_options = st.sidebar.button("Clear Graph Options")
     show_graph_descriptions = st.sidebar.checkbox("Show Graph Descriptions")
 
+    if clear_graph_options:
+        st.experimental_rerun()
+  
     if show_graph_descriptions:
         st.write("## Graph Descriptions")
         
