@@ -447,7 +447,7 @@ if st.sidebar.button("Save Report to PDF"):
         temp_images.append(temp_image_path)
 
     pdf_output = BytesIO()
-    pdf.output(pdf_output)
+    pdf_output.write(pdf.output(dest='S').encode('latin1'))
     pdf_output.seek(0)
 
     st.write("### Report saved successfully!")
