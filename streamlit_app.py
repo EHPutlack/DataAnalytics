@@ -421,6 +421,78 @@ elif menu_option == "Model Information":
         fig = px.bar(performance_df, x="Model", y=additional_metrics_to_plot, barmode="group")
         st.plotly_chart(fig)
 
+    # Descriptions of metrics
+    show_metric_descriptions = st.sidebar.checkbox("Show Metric Descriptions")
+
+    if show_metric_descriptions:
+        st.write("## Metric Descriptions")
+
+        st.write("### Accuracy")
+        st.write("""
+        Accuracy is the ratio of correctly predicted instances to the total instances.
+        """)
+
+        st.write("### Precision")
+        st.write("""
+        Precision is the ratio of correctly predicted positive observations to the total predicted positives.
+        """)
+
+        st.write("### Recall")
+        st.write("""
+        Recall is the ratio of correctly predicted positive observations to the all observations in actual class.
+        """)
+
+        st.write("### F1 Score")
+        st.write("""
+        The F1 Score is the weighted average of Precision and Recall.
+        """)
+
+        st.write("### ROC AUC")
+        st.write("""
+        ROC AUC is the Area Under the Receiver Operating Characteristic Curve. It represents the model's ability to distinguish between classes.
+        """)
+
+        st.write("### MCC")
+        st.write("""
+        The Matthews Correlation Coefficient (MCC) is a measure of the quality of binary classifications.
+        """)
+
+        st.write("### Balanced Accuracy")
+        st.write("""
+        Balanced Accuracy is the average of recall obtained on each class.
+        """)
+
+        st.write("### Cohen's Kappa")
+        st.write("""
+        Cohen's Kappa measures the agreement between two raters who each classify N items into C mutually exclusive categories.
+        """)
+
+        st.write("### Brier Score")
+        st.write("""
+        The Brier Score measures the mean squared difference between predicted probability and the actual outcome.
+        """)
+
+        st.write("### Logarithmic Loss")
+        st.write("""
+        Logarithmic Loss, or Log Loss, measures the performance of a classification model where the prediction input is a probability value between 0 and 1.
+        """)
+
+        st.write("### F2 Score")
+        st.write("""
+        The F2 Score is a weighted average of Precision and Recall, but with more weight given to Recall.
+        """)
+
+        st.write("### Jaccard Index")
+        st.write("""
+        The Jaccard Index measures similarity between finite sample sets.
+        """)
+
+        st.write("### Hamming Loss")
+        st.write("""
+        The Hamming Loss is the fraction of labels that are incorrectly predicted.
+        """)
+
+
 elif menu_option == "Graphs":
     st.write("# Graphs")
     st.sidebar.header("Graph Options")
