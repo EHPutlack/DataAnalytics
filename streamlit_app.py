@@ -1,5 +1,4 @@
 import streamlit as st
-import streamlit_extras
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -12,7 +11,10 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, confusion_matrix, roc_curve, precision_recall_curve
+from sklearn.metrics import (accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, 
+                             confusion_matrix, roc_curve, precision_recall_curve, matthews_corrcoef, 
+                             balanced_accuracy_score, cohen_kappa_score, brier_score_loss, 
+                             log_loss, fbeta_score, jaccard_score, hamming_loss)
 from fpdf import FPDF
 from io import BytesIO
 import base64
@@ -156,6 +158,14 @@ for model_name, model in models.items():
     recall = recall_score(y_test, y_pred)
     f1 = f1_score(y_test, y_pred)
     roc_auc = roc_auc_score(y_test, y_prob)
+    mcc = matthews_corrcoef(y_test, y_pred)
+    balanced_accuracy = balanced_accuracy_score(y_test, y_pred)
+    kappa = cohen_kappa_score(y_test, y_pred)
+    brier = brier_score_loss(y_test, y_prob)
+    logloss = log_loss(y_test, y_prob)
+    f2 = fbeta_score(y_test, y_pred, beta=2)
+    jaccard = jaccard_score(y_test, y_pred)
+    hamming = hamming_loss(y_test, y_pred)
 
     model_performance[model_name] = {
         "model": model,
@@ -164,6 +174,14 @@ for model_name, model in models.items():
         "recall": recall,
         "f1": f1,
         "roc_auc": roc_auc,
+        "mcc": mcc,
+        "balanced_accuracy": balanced_accuracy,
+        "kappa": kappa,
+        "brier": brier,
+        "logloss": logloss,
+        "f2": f2,
+        "jaccard": jaccard,
+        "hamming": hamming,
         "confusion_matrix": confusion_matrix(y_test, y_pred),
         "roc_curve": roc_curve(y_test, y_prob),
         "precision_recall_curve": precision_recall_curve(y_test, y_prob)
@@ -175,7 +193,15 @@ for model_name, model in models.items():
         "Precision": precision,
         "Recall": recall,
         "F1 Score": f1,
-        "ROC AUC": roc_auc
+        "ROC AUC": roc_auc,
+        "MCC": mcc,
+        "Balanced Accuracy": balanced_accuracy,
+        "Cohen's Kappa": kappa,
+        "Brier Score": brier,
+        "Logarithmic Loss": logloss,
+        "F2 Score": f2,
+        "Jaccard Index": jaccard,
+        "Hamming Loss": hamming
     })
 
 performance_df = pd.DataFrame(performance_metrics)  # Ensure this is defined before using it
@@ -267,6 +293,17 @@ if st.sidebar.button("Save Report to PDF"):
         fig.savefig(temp_image_path, bbox_inches='tight')
         pdf.add_page()
         pdf.cell(200, 10, txt="Model Performance Comparison", ln=True, align="L")
+        pdf.image(temp_image_path, w=180)  # Adjust width as needed
+        temp_images.append(temp_image_path)
+
+        fig, ax = plt.subplots(figsize=(8, 6))
+        performance_df.plot(kind="bar", x="Model", y=["MCC", "Balanced Accuracy", "Cohen's Kappa", "Brier Score", "Logarithmic Loss", "F2 Score", "Jaccard Index", "Hamming Loss"], ax=ax)
+        ax.set_title("Additional Model Performance Comparison")
+        ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.6), ncol=2)
+        temp_image_path = "additional_model_performance_comparison.png"
+        fig.savefig(temp_image_path, bbox_inches='tight')
+        pdf.add_page()
+        pdf.cell(200, 10, txt="Additional Model Performance Comparison", ln=True, align="L")
         pdf.image(temp_image_path, w=180)  # Adjust width as needed
         temp_images.append(temp_image_path)
 
@@ -375,6 +412,13 @@ elif menu_option == "Model Information":
     fig, ax = plt.subplots()
     performance_df.plot(kind="bar", x="Model", y=["Accuracy", "Precision", "Recall", "F1 Score", "ROC AUC"], ax=ax)
     ax.set_title("Model Performance Comparison")
+    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.6), ncol=2)  # Adjust the legend position
+    st.pyplot(fig)
+
+    st.write("### Additional Model Performance Comparison")
+    fig, ax = plt.subplots()
+    performance_df.plot(kind="bar", x="Model", y=["MCC", "Balanced Accuracy", "Cohen's Kappa", "Brier Score", "Logarithmic Loss", "F2 Score", "Jaccard Index", "Hamming Loss"], ax=ax)
+    ax.set_title("Additional Model Performance Comparison")
     ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.6), ncol=2)  # Adjust the legend position
     st.pyplot(fig)
 
