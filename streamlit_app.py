@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+import plotly.express as px
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, AdaBoostClassifier
 from sklearn.linear_model import LogisticRegression
@@ -409,18 +410,16 @@ elif menu_option == "Model Information":
     st.write(f"ROC AUC: {best_model['ROC AUC']:.2f}")
 
     st.write("### Plotting the Model Performance Comparison")
-    fig, ax = plt.subplots()
-    performance_df.plot(kind="bar", x="Model", y=["Accuracy", "Precision", "Recall", "F1 Score", "ROC AUC"], ax=ax)
-    ax.set_title("Model Performance Comparison")
-    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.6), ncol=2)  # Adjust the legend position
-    st.pyplot(fig)
+    metrics_to_plot = st.multiselect("Select metrics to plot", ["Accuracy", "Precision", "Recall", "F1 Score", "ROC AUC"])
+    if metrics_to_plot:
+        fig = px.bar(performance_df, x="Model", y=metrics_to_plot, barmode="group")
+        st.plotly_chart(fig)
 
     st.write("### Additional Model Performance Comparison")
-    fig, ax = plt.subplots()
-    performance_df.plot(kind="bar", x="Model", y=["MCC", "Balanced Accuracy", "Cohen's Kappa", "Brier Score", "Logarithmic Loss", "F2 Score", "Jaccard Index", "Hamming Loss"], ax=ax)
-    ax.set_title("Additional Model Performance Comparison")
-    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.6), ncol=2)  # Adjust the legend position
-    st.pyplot(fig)
+    additional_metrics_to_plot = st.multiselect("Select additional metrics to plot", ["MCC", "Balanced Accuracy", "Cohen's Kappa", "Brier Score", "Logarithmic Loss", "F2 Score", "Jaccard Index", "Hamming Loss"])
+    if additional_metrics_to_plot:
+        fig = px.bar(performance_df, x="Model", y=additional_metrics_to_plot, barmode="group")
+        st.plotly_chart(fig)
 
 elif menu_option == "Graphs":
     st.write("# Graphs")
@@ -510,7 +509,7 @@ elif menu_option == "Accessibility Settings":
     color_theme = st.sidebar.radio("Select Color Theme", ["Default", "High Contrast", "Colorblind Friendly"])
     if color_theme == "High Contrast":
         st.write("<style>body {background-color: black; color: white;}</style>", unsafe_allow_html=True)
-    elif color_theme is "Colorblind Friendly":
+    elif color_theme == "Colorblind Friendly":
         st.write("<style>body {background-color: white; color: black;}</style>", unsafe_allow_html=True)
 
     language = st.sidebar.radio("Select Language", ["English", "Spanish", "French"])
