@@ -9,13 +9,13 @@ body {
 }
 
 .stAlert {
-    background-color: #fff;
+    background-color: #000;
     color: black;
 }
 
 .stHelp {
-    background-color: #000;
-    border-left: 6px solid #000;
+    background-color: #fff;
+    border-left: 6px solid #fff;
     padding: 10px;
     color: #000;
 }
