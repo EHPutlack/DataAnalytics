@@ -39,7 +39,7 @@ st.markdown(
         justify-content: flex-start;
         align-items: center;
         position: fixed;
-        bottom: 40px;
+        bottom: 50px;
         right: 10px;
     }}
     .logo-container img {{
