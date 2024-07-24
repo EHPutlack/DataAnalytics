@@ -498,6 +498,7 @@ elif menu_option == "Graphs":
     st.sidebar.header("Graph Options")
     graph_options = st.sidebar.multiselect("Select Graphs", ["Confusion Matrix", "ROC Curve", "Precision-Recall Curve", "Feature Importance"])
     selected_model = st.sidebar.selectbox("Select Model for Graphs", list(models.keys()))
+    show_all_models = st.sidebar.button("Show All Models for Selected Graphs")
     show_graph_descriptions = st.sidebar.checkbox("Show Graph Descriptions")
 
     if show_graph_descriptions:
@@ -530,7 +531,52 @@ elif menu_option == "Graphs":
         This graph is typically available for tree-based models like Random Forest and Gradient Boosting.
         """)
 
-    if selected_model:
+    if show_all_models:
+        for model_name, metrics in model_performance.items():
+            if "Confusion Matrix" in graph_options:
+                st.write(f"### Confusion Matrix for {model_name}")
+                fig, ax = plt.subplots()
+                sns.heatmap(metrics["confusion_matrix"], annot=True, fmt="d", cmap="Blues", ax=ax)
+                ax.set_title(f"Confusion Matrix for {model_name}")
+                ax.set_xlabel("Predicted")
+                ax.set_ylabel("Actual")
+                st.pyplot(fig)
+
+            if "ROC Curve" in graph_options:
+                st.write(f"### ROC Curve for {model_name}")
+                fig, ax = plt.subplots()
+                fpr, tpr, _ = metrics["roc_curve"]
+                ax.plot(fpr, tpr, label=f"{model_name} (AUC = {metrics['roc_auc']:.2f})")
+                ax.plot([0, 1], [0, 1], linestyle="--")
+                ax.set_title(f"ROC Curve for {model_name}")
+                ax.set_xlabel("False Positive Rate")
+                ax.set_ylabel("True Positive Rate")
+                ax.legend(loc="lower right")
+                st.pyplot(fig)
+
+            if "Precision-Recall Curve" in graph_options:
+                st.write(f"### Precision-Recall Curve for {model_name}")
+                fig, ax = plt.subplots()
+                precision, recall, _ = metrics["precision_recall_curve"]
+                ax.plot(recall, precision, label=f"{model_name}")
+                ax.set_title(f"Precision-Recall Curve for {model_name}")
+                ax.set_xlabel("Recall")
+                ax.set_ylabel("Precision")
+                ax.legend(loc="lower left")
+                st.pyplot(fig)
+
+            if "Feature Importance" in graph_options and hasattr(metrics["model"], "feature_importances_"):
+                st.write(f"### Feature Importance for {model_name}")
+                feature_importance = pd.DataFrame({
+                    'Feature': parameters,
+                    'Importance': metrics["model"].feature_importances_
+                }).sort_values(by='Importance', ascending=False)
+                fig, ax = plt.subplots()
+                sns.barplot(x="Importance", y="Feature", data=feature_importance, ax=ax)
+                ax.set_title(f"Feature Importance for {model_name}")
+                st.pyplot(fig)
+
+    else:
         metrics = model_performance[selected_model]
         if "Confusion Matrix" in graph_options:
             st.write(f"### Confusion Matrix for {selected_model}")
@@ -574,6 +620,7 @@ elif menu_option == "Graphs":
             sns.barplot(x="Importance", y="Feature", data=feature_importance, ax=ax)
             ax.set_title(f"Feature Importance for {selected_model}")
             st.pyplot(fig)
+
 
 elif menu_option == "Accessibility Settings":
     st.sidebar.header("Accessibility Settings")
