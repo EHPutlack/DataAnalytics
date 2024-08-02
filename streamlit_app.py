@@ -381,8 +381,9 @@ if menu_option == "Data Input":
                     y_new = new_data['ALS']
                     X_new_scaled = scaler.fit_transform(X_new)
                     X_train_new, X_test_new, y_train_new, y_test_new = train_test_split(X_new_scaled, y_new, test_size=0.2, random_state=0)
-                    global model_performance, performance_df
                     model_performance, performance_df = train_models(X_train_new, y_train_new, X_test_new, y_test_new)
+                    st.session_state['model_performance'] = model_performance
+                    st.session_state['performance_df'] = performance_df
                     st.session_state['menu_option'] = "Graphs"
                     st.experimental_rerun()
 
@@ -413,27 +414,32 @@ if menu_option == "Data Input":
 elif menu_option == "Model Information":
     st.write("# Model Performance Comparison")
 
-    st.dataframe(performance_df)
+    if 'performance_df' in st.session_state:
+        performance_df = st.session_state['performance_df']
+        st.dataframe(performance_df)
 
-    best_model = performance_df.loc[performance_df["Accuracy"].idxmax()]
-    st.write(f"### Best Model: {best_model['Model']}")
-    st.write(f"Accuracy: {best_model['Accuracy']:.2f}")
-    st.write(f"Precision: {best_model['Precision']:.2f}")
-    st.write(f"Recall: {best_model['Recall']:.2f}")
-    st.write(f"F1 Score: {best_model['F1 Score']:.2f}")
-    st.write(f"ROC AUC: {best_model['ROC AUC']:.2f}")
+        best_model = performance_df.loc[performance_df["Accuracy"].idxmax()]
+        st.write(f"### Best Model: {best_model['Model']}")
+        st.write(f"Accuracy: {best_model['Accuracy']:.2f}")
+        st.write(f"Precision: {best_model['Precision']:.2f}")
+        st.write(f"Recall: {best_model['Recall']:.2f}")
+        st.write(f"F1 Score: {best_model['F1 Score']:.2f}")
+        st.write(f"ROC AUC: {best_model['ROC AUC']:.2f}")
 
-    st.write("### Plotting the Model Performance Comparison")
-    metrics_to_plot = st.multiselect("Select metrics to plot", ["Accuracy", "Precision", "Recall", "F1 Score", "ROC AUC"])
-    if metrics_to_plot:
-        fig = px.bar(performance_df, x="Model", y=metrics_to_plot, barmode="group")
-        st.plotly_chart(fig)
+        st.write("### Plotting the Model Performance Comparison")
+        metrics_to_plot = st.multiselect("Select metrics to plot", ["Accuracy", "Precision", "Recall", "F1 Score", "ROC AUC"])
+        if metrics_to_plot:
+            fig = px.bar(performance_df, x="Model", y=metrics_to_plot, barmode="group")
+            st.plotly_chart(fig)
 
-    st.write("### Additional Model Performance Comparison")
-    additional_metrics_to_plot = st.multiselect("Select additional metrics to plot", ["MCC", "Balanced Accuracy", "Cohen's Kappa", "Brier Score", "Logarithmic Loss", "F2 Score", "Jaccard Index", "Hamming Loss"])
-    if additional_metrics_to_plot:
-        fig = px.bar(performance_df, x="Model", y=additional_metrics_to_plot, barmode="group")
-        st.plotly_chart(fig)
+        st.write("### Additional Model Performance Comparison")
+        additional_metrics_to_plot = st.multiselect("Select additional metrics to plot", ["MCC", "Balanced Accuracy", "Cohen's Kappa", "Brier Score", "Logarithmic Loss", "F2 Score", "Jaccard Index", "Hamming Loss"])
+        if additional_metrics_to_plot:
+            fig = px.bar(performance_df, x="Model", y=additional_metrics_to_plot, barmode="group")
+            st.plotly_chart(fig)
+
+    else:
+        st.write("No performance data available. Please upload a CSV and train the models first.")
 
     # Descriptions of metrics
     show_metric_descriptions = st.sidebar.checkbox("Show Metric Descriptions")
@@ -514,126 +520,131 @@ elif menu_option == "Graphs":
     selected_model = st.sidebar.selectbox("Select Model for Graphs", list(models.keys()))
     show_all_models = st.sidebar.button("Show All Models for Selected Graphs")
     show_graph_descriptions = st.sidebar.checkbox("Show Graph Descriptions")
-  
-    if show_graph_descriptions:
-        st.write("## Graph Descriptions")
-        
-        st.write("### Confusion Matrix")
-        st.write("""
-        A Confusion Matrix is a table used to evaluate the performance of a classification model.
-        It shows the actual versus predicted classifications and is useful for understanding the number of true positives, true negatives, false positives, and false negatives.
-        """)
 
-        st.write("### ROC Curve")
-        st.write("""
-        The ROC (Receiver Operating Characteristic) Curve is a graphical representation of a model's diagnostic ability.
-        It plots the true positive rate (sensitivity) against the false positive rate (1 - specificity) at various threshold settings.
-        The area under the curve (AUC) represents the model's ability to distinguish between classes.
-        """)
+    if 'model_performance' not in st.session_state:
+        st.write("No model performance data available. Please train the models first.")
+    else:
+        model_performance = st.session_state['model_performance']
 
-        st.write("### Precision-Recall Curve")
-        st.write("""
-        The Precision-Recall Curve is a plot that shows the trade-off between precision and recall for different threshold values.
-        Precision is the ratio of true positive predictions to the total predicted positives, while recall is the ratio of true positive predictions to all actual positives.
-        This curve is particularly useful for imbalanced datasets.
-        """)
+        if show_graph_descriptions:
+            st.write("## Graph Descriptions")
+            
+            st.write("### Confusion Matrix")
+            st.write("""
+            A Confusion Matrix is a table used to evaluate the performance of a classification model.
+            It shows the actual versus predicted classifications and is useful for understanding the number of true positives, true negatives, false positives, and false negatives.
+            """)
 
-        st.write("### Feature Importance")
-        st.write("""
-        Feature Importance indicates the contribution of each feature to the prediction made by the model.
-        It helps in understanding which features are most influential in the model's decision-making process.
-        This graph is typically available for tree-based models like Random Forest and Gradient Boosting.
-        """)
+            st.write("### ROC Curve")
+            st.write("""
+            The ROC (Receiver Operating Characteristic) Curve is a graphical representation of a model's diagnostic ability.
+            It plots the true positive rate (sensitivity) against the false positive rate (1 - specificity) at various threshold settings.
+            The area under the curve (AUC) represents the model's ability to distinguish between classes.
+            """)
 
-    if show_all_models:
-        for model_name, metrics in model_performance.items():
+            st.write("### Precision-Recall Curve")
+            st.write("""
+            The Precision-Recall Curve is a plot that shows the trade-off between precision and recall for different threshold values.
+            Precision is the ratio of true positive predictions to the total predicted positives, while recall is the ratio of true positive predictions to all actual positives.
+            This curve is particularly useful for imbalanced datasets.
+            """)
+
+            st.write("### Feature Importance")
+            st.write("""
+            Feature Importance indicates the contribution of each feature to the prediction made by the model.
+            It helps in understanding which features are most influential in the model's decision-making process.
+            This graph is typically available for tree-based models like Random Forest and Gradient Boosting.
+            """)
+
+        if show_all_models:
+            for model_name, metrics in model_performance.items():
+                if "Confusion Matrix" in graph_options:
+                    st.write(f"### Confusion Matrix for {model_name}")
+                    fig, ax = plt.subplots()
+                    sns.heatmap(metrics["confusion_matrix"], annot=True, fmt="d", cmap="Blues", ax=ax)
+                    ax.set_title(f"Confusion Matrix for {model_name}")
+                    ax.set_xlabel("Predicted")
+                    ax.set_ylabel("Actual")
+                    st.pyplot(fig)
+
+                if "ROC Curve" in graph_options:
+                    st.write(f"### ROC Curve for {model_name}")
+                    fig, ax = plt.subplots()
+                    fpr, tpr, _ = metrics["roc_curve"]
+                    ax.plot(fpr, tpr, label=f"{model_name} (AUC = {metrics['roc_auc']:.2f})")
+                    ax.plot([0, 1], [0, 1], linestyle="--")
+                    ax.set_title(f"ROC Curve for {model_name}")
+                    ax.set_xlabel("False Positive Rate")
+                    ax.set_ylabel("True Positive Rate")
+                    ax.legend(loc="lower right")
+                    st.pyplot(fig)
+
+                if "Precision-Recall Curve" in graph_options:
+                    st.write(f"### Precision-Recall Curve for {model_name}")
+                    fig, ax = plt.subplots()
+                    precision, recall, _ = metrics["precision_recall_curve"]
+                    ax.plot(recall, precision, label=f"{model_name}")
+                    ax.set_title(f"Precision-Recall Curve for {model_name}")
+                    ax.set_xlabel("Recall")
+                    ax.set_ylabel("Precision")
+                    ax.legend(loc="lower left")
+                    st.pyplot(fig)
+
+                if "Feature Importance" in graph_options and hasattr(metrics["model"], "feature_importances_"):
+                    st.write(f"### Feature Importance for {model_name}")
+                    feature_importance = pd.DataFrame({
+                        'Feature': parameters,
+                        'Importance': metrics["model"].feature_importances_
+                    }).sort_values(by='Importance', ascending=False)
+                    fig, ax = plt.subplots()
+                    sns.barplot(x="Importance", y="Feature", data=feature_importance, ax=ax)
+                    ax.set_title(f"Feature Importance for {model_name}")
+                    st.pyplot(fig)
+
+        else:
+            metrics = model_performance[selected_model]
             if "Confusion Matrix" in graph_options:
-                st.write(f"### Confusion Matrix for {model_name}")
+                st.write(f"### Confusion Matrix for {selected_model}")
                 fig, ax = plt.subplots()
                 sns.heatmap(metrics["confusion_matrix"], annot=True, fmt="d", cmap="Blues", ax=ax)
-                ax.set_title(f"Confusion Matrix for {model_name}")
+                ax.set_title(f"Confusion Matrix for {selected_model}")
                 ax.set_xlabel("Predicted")
                 ax.set_ylabel("Actual")
                 st.pyplot(fig)
 
             if "ROC Curve" in graph_options:
-                st.write(f"### ROC Curve for {model_name}")
+                st.write(f"### ROC Curve for {selected_model}")
                 fig, ax = plt.subplots()
                 fpr, tpr, _ = metrics["roc_curve"]
-                ax.plot(fpr, tpr, label=f"{model_name} (AUC = {metrics['roc_auc']:.2f})")
+                ax.plot(fpr, tpr, label=f"{selected_model} (AUC = {metrics['roc_auc']:.2f})")
                 ax.plot([0, 1], [0, 1], linestyle="--")
-                ax.set_title(f"ROC Curve for {model_name}")
+                ax.set_title(f"ROC Curve for {selected_model}")
                 ax.set_xlabel("False Positive Rate")
                 ax.set_ylabel("True Positive Rate")
                 ax.legend(loc="lower right")
                 st.pyplot(fig)
 
             if "Precision-Recall Curve" in graph_options:
-                st.write(f"### Precision-Recall Curve for {model_name}")
+                st.write(f"### Precision-Recall Curve for {selected_model}")
                 fig, ax = plt.subplots()
                 precision, recall, _ = metrics["precision_recall_curve"]
-                ax.plot(recall, precision, label=f"{model_name}")
-                ax.set_title(f"Precision-Recall Curve for {model_name}")
+                ax.plot(recall, precision, label=f"{selected_model}")
+                ax.set_title(f"Precision-Recall Curve for {selected_model}")
                 ax.set_xlabel("Recall")
                 ax.set_ylabel("Precision")
                 ax.legend(loc="lower left")
                 st.pyplot(fig)
 
             if "Feature Importance" in graph_options and hasattr(metrics["model"], "feature_importances_"):
-                st.write(f"### Feature Importance for {model_name}")
+                st.write(f"### Feature Importance for {selected_model}")
                 feature_importance = pd.DataFrame({
                     'Feature': parameters,
                     'Importance': metrics["model"].feature_importances_
                 }).sort_values(by='Importance', ascending=False)
                 fig, ax = plt.subplots()
                 sns.barplot(x="Importance", y="Feature", data=feature_importance, ax=ax)
-                ax.set_title(f"Feature Importance for {model_name}")
+                ax.set_title(f"Feature Importance for {selected_model}")
                 st.pyplot(fig)
-
-    else:
-        metrics = model_performance[selected_model]
-        if "Confusion Matrix" in graph_options:
-            st.write(f"### Confusion Matrix for {selected_model}")
-            fig, ax = plt.subplots()
-            sns.heatmap(metrics["confusion_matrix"], annot=True, fmt="d", cmap="Blues", ax=ax)
-            ax.set_title(f"Confusion Matrix for {selected_model}")
-            ax.set_xlabel("Predicted")
-            ax.set_ylabel("Actual")
-            st.pyplot(fig)
-
-        if "ROC Curve" in graph_options:
-            st.write(f"### ROC Curve for {selected_model}")
-            fig, ax = plt.subplots()
-            fpr, tpr, _ = metrics["roc_curve"]
-            ax.plot(fpr, tpr, label=f"{selected_model} (AUC = {metrics['roc_auc']:.2f})")
-            ax.plot([0, 1], [0, 1], linestyle="--")
-            ax.set_title(f"ROC Curve for {selected_model}")
-            ax.set_xlabel("False Positive Rate")
-            ax.set_ylabel("True Positive Rate")
-            ax.legend(loc="lower right")
-            st.pyplot(fig)
-
-        if "Precision-Recall Curve" in graph_options:
-            st.write(f"### Precision-Recall Curve for {selected_model}")
-            fig, ax = plt.subplots()
-            precision, recall, _ = metrics["precision_recall_curve"]
-            ax.plot(recall, precision, label=f"{selected_model}")
-            ax.set_title(f"Precision-Recall Curve for {selected_model}")
-            ax.set_xlabel("Recall")
-            ax.set_ylabel("Precision")
-            ax.legend(loc="lower left")
-            st.pyplot(fig)
-
-        if "Feature Importance" in graph_options and hasattr(metrics["model"], "feature_importances_"):
-            st.write(f"### Feature Importance for {selected_model}")
-            feature_importance = pd.DataFrame({
-                'Feature': parameters,
-                'Importance': metrics["model"].feature_importances_
-            }).sort_values(by='Importance', ascending=False)
-            fig, ax = plt.subplots()
-            sns.barplot(x="Importance", y="Feature", data=feature_importance, ax=ax)
-            ax.set_title(f"Feature Importance for {selected_model}")
-            st.pyplot(fig)
 
 
 elif menu_option == "Accessibility Settings":
