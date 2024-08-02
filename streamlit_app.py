@@ -145,67 +145,69 @@ models = {
     "AdaBoost": AdaBoostClassifier(algorithm="SAMME", random_state=0)  # Updated to use SAMME algorithm
 }
 
-# Train models and calculate performance metrics
-model_performance = {}
-performance_metrics = []
+# Function to train models and calculate performance metrics
+def train_models(X_train, y_train, X_test, y_test):
+    model_performance = {}
+    performance_metrics = []
 
-for model_name, model in models.items():
-    model.fit(X_train, y_train)
-    y_pred = model.predict(X_test)
-    y_prob = model.predict_proba(X_test)[:, 1] if hasattr(model, "predict_proba") else [0] * len(y_test)
+    for model_name, model in models.items():
+        model.fit(X_train, y_train)
+        y_pred = model.predict(X_test)
+        y_prob = model.predict_proba(X_test)[:, 1] if hasattr(model, "predict_proba") else [0] * len(y_test)
 
-    accuracy = accuracy_score(y_test, y_pred)
-    precision = precision_score(y_test, y_pred)
-    recall = recall_score(y_test, y_pred)
-    f1 = f1_score(y_test, y_pred)
-    roc_auc = roc_auc_score(y_test, y_prob)
-    mcc = matthews_corrcoef(y_test, y_pred)
-    balanced_accuracy = balanced_accuracy_score(y_test, y_pred)
-    kappa = cohen_kappa_score(y_test, y_pred)
-    brier = brier_score_loss(y_test, y_prob)
-    logloss = log_loss(y_test, y_prob)
-    f2 = fbeta_score(y_test, y_pred, beta=2)
-    jaccard = jaccard_score(y_test, y_pred)
-    hamming = hamming_loss(y_test, y_pred)
+        accuracy = accuracy_score(y_test, y_pred)
+        precision = precision_score(y_test, y_pred)
+        recall = recall_score(y_test, y_pred)
+        f1 = f1_score(y_test, y_pred)
+        roc_auc = roc_auc_score(y_test, y_prob)
+        mcc = matthews_corrcoef(y_test, y_pred)
+        balanced_accuracy = balanced_accuracy_score(y_test, y_pred)
+        kappa = cohen_kappa_score(y_test, y_pred)
+        brier = brier_score_loss(y_test, y_prob)
+        logloss = log_loss(y_test, y_prob)
+        f2 = fbeta_score(y_test, y_pred, beta=2)
+        jaccard = jaccard_score(y_test, y_pred)
+        hamming = hamming_loss(y_test, y_pred)
 
-    model_performance[model_name] = {
-        "model": model,
-        "accuracy": accuracy,
-        "precision": precision,
-        "recall": recall,
-        "f1": f1,
-        "roc_auc": roc_auc,
-        "mcc": mcc,
-        "balanced_accuracy": balanced_accuracy,
-        "kappa": kappa,
-        "brier": brier,
-        "logloss": logloss,
-        "f2": f2,
-        "jaccard": jaccard,
-        "hamming": hamming,
-        "confusion_matrix": confusion_matrix(y_test, y_pred),
-        "roc_curve": roc_curve(y_test, y_prob),
-        "precision_recall_curve": precision_recall_curve(y_test, y_prob)
-    }
+        model_performance[model_name] = {
+            "model": model,
+            "accuracy": accuracy,
+            "precision": precision,
+            "recall": recall,
+            "f1": f1,
+            "roc_auc": roc_auc,
+            "mcc": mcc,
+            "balanced_accuracy": balanced_accuracy,
+            "kappa": kappa,
+            "brier": brier,
+            "logloss": logloss,
+            "f2": f2,
+            "jaccard": jaccard,
+            "hamming": hamming,
+            "confusion_matrix": confusion_matrix(y_test, y_pred),
+            "roc_curve": roc_curve(y_test, y_prob),
+            "precision_recall_curve": precision_recall_curve(y_test, y_prob)
+        }
 
-    performance_metrics.append({
-        "Model": model_name,
-        "Accuracy": accuracy,
-        "Precision": precision,
-        "Recall": recall,
-        "F1 Score": f1,
-        "ROC AUC": roc_auc,
-        "MCC": mcc,
-        "Balanced Accuracy": balanced_accuracy,
-        "Cohen's Kappa": kappa,
-        "Brier Score": brier,
-        "Logarithmic Loss": logloss,
-        "F2 Score": f2,
-        "Jaccard Index": jaccard,
-        "Hamming Loss": hamming
-    })
+        performance_metrics.append({
+            "Model": model_name,
+            "Accuracy": accuracy,
+            "Precision": precision,
+            "Recall": recall,
+            "F1 Score": f1,
+            "ROC AUC": roc_auc,
+            "MCC": mcc,
+            "Balanced Accuracy": balanced_accuracy,
+            "Cohen's Kappa": kappa,
+            "Brier Score": brier,
+            "Logarithmic Loss": logloss,
+            "F2 Score": f2,
+            "Jaccard Index": jaccard,
+            "Hamming Loss": hamming
+        })
 
-performance_df = pd.DataFrame(performance_metrics)  # Ensure this is defined before using it
+    performance_df = pd.DataFrame(performance_metrics)
+    return model_performance, performance_df
 
 # Sidebar menu
 st.sidebar.title("Menu Options")
@@ -372,6 +374,18 @@ if menu_option == "Data Input":
                 new_data['ALS Prediction'] = predictions
                 st.write("Predictions for uploaded data:")
                 st.dataframe(new_data)
+                
+                # Add button to train models and show graphs
+                if st.button("Train Models and Show Graphs"):
+                    X_new = new_data[parameters]
+                    y_new = new_data['ALS']
+                    X_new_scaled = scaler.fit_transform(X_new)
+                    X_train_new, X_test_new, y_train_new, y_test_new = train_test_split(X_new_scaled, y_new, test_size=0.2, random_state=0)
+                    global model_performance, performance_df
+                    model_performance, performance_df = train_models(X_train_new, y_train_new, X_test_new, y_test_new)
+                    st.session_state['menu_option'] = "Graphs"
+                    st.experimental_rerun()
+
             else:
                 st.write("Error: The uploaded CSV file does not contain the required columns.")
 
@@ -636,5 +650,5 @@ elif menu_option == "Accessibility Settings":
     language = st.sidebar.radio("Select Language", ["English", "Spanish", "French"])
     if language == "Spanish":
         st.write("Idioma seleccionado: Español")
-    elif language is "French":
+    elif language == "French":
         st.write("Langue sélectionnée: Français")
