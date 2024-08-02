@@ -1,8 +1,6 @@
-# 🌀 Spiral template
+# Mitosense ALS Predictor
 
-A simple Streamlit app that draws a spiral. 
-
-[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://basic-template.streamlit.app/)
+This app allows users to input information about patient, or patients, that may or may not have ALS. The app then uses various Machine Learning Models to determine the likelihood of ALS.
 
 ### How to run it on your own machine
 
