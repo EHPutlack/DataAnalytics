@@ -215,7 +215,7 @@ menu_option = st.sidebar.radio("Choose an option", ["Welcome", "Data Input", "Mo
 
 # Welcome screen
 if menu_option == "Welcome":
-    st.title("Welcome to the ALS Detection Model")
+    st.write("# Welcome to the ALS Detection Model")
     st.markdown("""
     This application allows you to:
     - Upload patient data and predict the likelihood of ALS.
