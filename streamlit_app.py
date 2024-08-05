@@ -367,31 +367,28 @@ if menu_option == "Data Input":
         if uploaded_file is not None:
             new_data = pd.read_csv(uploaded_file)
             if set(parameters).issubset(new_data.columns):
-                if 'ALS' not in new_data.columns:
-                    st.write("Error: The uploaded CSV file does not contain the 'ALS' column for target labels.")
-                else:
-                    # Fit the scaler on the new data and transform it
-                    scaler.fit(new_data[parameters])
-                    new_data_scaled = scaler.transform(new_data[parameters])
-                    model_choice = st.sidebar.selectbox("Choose a model", list(models.keys()))
-                    model = models[model_choice]
-                    model.fit(X_train, y_train)  # Fit the model with the original training data
-                    predictions = model.predict(new_data_scaled)
-                    new_data['ALS Prediction'] = predictions
-                    st.write("Predictions for uploaded data:")
-                    st.dataframe(new_data)
-                    
-                    # Add button to train models and show graphs
-                    if st.button("Train Models and Show Graphs"):
-                        X_new = new_data[parameters]
-                        y_new = new_data['ALS']
-                        X_new_scaled = scaler.fit_transform(X_new)
-                        X_train_new, X_test_new, y_train_new, y_test_new = train_test_split(X_new_scaled, y_new, test_size=0.2, random_state=0)
-                        model_performance, performance_df = train_models(X_train_new, y_train_new, X_test_new, y_test_new)
-                        st.session_state['model_performance'] = model_performance
-                        st.session_state['performance_df'] = performance_df
-                        st.session_state['menu_option'] = "Graphs"
-                        st.experimental_rerun()
+                # Fit the scaler on the new data and transform it
+                scaler.fit(new_data[parameters])
+                new_data_scaled = scaler.transform(new_data[parameters])
+                model_choice = st.sidebar.selectbox("Choose a model", list(models.keys()))
+                model = models[model_choice]
+                model.fit(X_train, y_train)  # Fit the model with the original training data
+                predictions = model.predict(new_data_scaled)
+                new_data['ALS Prediction'] = predictions
+                st.write("Predictions for uploaded data:")
+                st.dataframe(new_data)
+                
+                # Add button to train models and show graphs
+                if st.button("Train Models and Show Graphs"):
+                    X_new = new_data[parameters]
+                    y_new = new_data['ALS']
+                    X_new_scaled = scaler.fit_transform(X_new)
+                    X_train_new, X_test_new, y_train_new, y_test_new = train_test_split(X_new_scaled, y_new, test_size=0.2, random_state=0)
+                    model_performance, performance_df = train_models(X_train_new, y_train_new, X_test_new, y_test_new)
+                    st.session_state['model_performance'] = model_performance
+                    st.session_state['performance_df'] = performance_df
+                    st.session_state['menu_option'] = "Graphs"
+                    st.experimental_rerun()
 
             else:
                 st.write("Error: The uploaded CSV file does not contain the required columns.")
