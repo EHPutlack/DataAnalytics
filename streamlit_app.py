@@ -221,7 +221,7 @@ if menu_option == "Welcome":
     - Upload patient data and predict the likelihood of ALS.
     - Compare various machine learning models and their performance.
     - Visualize performance metrics and feature importance.
-    Use the sidebar to navigate through the different sections.
+    - Use the sidebar to navigate through the different sections.
     """)
     
 # Saves the Report to a PDF
