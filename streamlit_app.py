@@ -209,7 +209,18 @@ performance_df = pd.DataFrame(performance_metrics)  # Ensure this is defined bef
 
 # Sidebar menu
 st.sidebar.title("Menu Options")
-menu_option = st.sidebar.radio("Choose an option", ["Data Input", "Model Information", "Graphs", "Accessibility Settings"])
+menu_option = st.sidebar.radio("Choose an option", ["Welcome", "Data Input", "Model Information", "Graphs", "Accessibility Settings"])
+
+# Welcome screen
+if menu_option == "Welcome":
+    st.write("# Welcome to Mitosense's ALS Detection Model!")
+    st.markdown("""
+    This application allows you to:
+    - Upload patient data and predict the likelihood of ALS.
+    - Compare various machine learning models and their performance.
+    - Visualize performance metrics and feature importance.
+    - Use the sidebar to navigate through the different sections.
+    """)
 
 # Saves the Report to a PDF
 if st.sidebar.button("Save Report to PDF"):
