@@ -367,9 +367,12 @@ if menu_option == "Data Input":
         if uploaded_file is not None:
             new_data = pd.read_csv(uploaded_file)
             if set(parameters).issubset(new_data.columns):
+                # Fit the scaler on the new data and transform it
+                scaler.fit(new_data[parameters])
                 new_data_scaled = scaler.transform(new_data[parameters])
                 model_choice = st.sidebar.selectbox("Choose a model", list(models.keys()))
                 model = models[model_choice]
+                model.fit(X_train, y_train)  # Fit the model with the original training data
                 predictions = model.predict(new_data_scaled)
                 new_data['ALS Prediction'] = predictions
                 st.write("Predictions for uploaded data:")
