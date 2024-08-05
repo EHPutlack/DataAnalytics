@@ -211,8 +211,19 @@ def train_models(X_train, y_train, X_test, y_test):
 
 # Sidebar menu
 st.sidebar.title("Menu Options")
-menu_option = st.sidebar.radio("Choose an option", ["Data Input", "Model Information", "Graphs", "Accessibility Settings"])
+menu_option = st.sidebar.radio("Choose an option", ["Welcome", "Data Input", "Model Information", "Graphs", "Accessibility Settings"])
 
+# Welcome screen
+if menu_option == "Welcome":
+    st.title("Welcome to the ALS Detection Model")
+    st.markdown("""
+    This application allows you to:
+    - Upload patient data and predict the likelihood of ALS.
+    - Compare various machine learning models and their performance.
+    - Visualize performance metrics and feature importance.
+    Use the sidebar to navigate through the different sections.
+    """)
+    
 # Saves the Report to a PDF
 if st.sidebar.button("Save Report to PDF"):
     graph_options = ["Confusion Matrix", "ROC Curve", "Precision-Recall Curve", "Feature Importance", "Model Performance Comparison"]
@@ -378,17 +389,19 @@ if menu_option == "Data Input":
                 st.write("Predictions for uploaded data:")
                 st.dataframe(new_data)
                 
-                # Add button to train models and show graphs
-                if st.button("Train Models and Show Graphs"):
-                    X_new = new_data[parameters]
-                    y_new = new_data['ALS']
-                    X_new_scaled = scaler.fit_transform(X_new)
-                    X_train_new, X_test_new, y_train_new, y_test_new = train_test_split(X_new_scaled, y_new, test_size=0.2, random_state=0)
-                    model_performance, performance_df = train_models(X_train_new, y_train_new, X_test_new, y_test_new)
-                    st.session_state['model_performance'] = model_performance
-                    st.session_state['performance_df'] = performance_df
-                    st.session_state['menu_option'] = "Graphs"
-                    st.experimental_rerun()
+                # Centered button to train models and show graphs
+                col1, col2, col3 = st.columns([1, 1, 1])
+                with col2:
+                    if st.button("Train Models and Show Graphs"):
+                        X_new = new_data[parameters]
+                        y_new = new_data['ALS']
+                        X_new_scaled = scaler.fit_transform(X_new)
+                        X_train_new, X_test_new, y_train_new, y_test_new = train_test_split(X_new_scaled, y_new, test_size=0.2, random_state=0)
+                        model_performance, performance_df = train_models(X_train_new, y_train_new, X_test_new, y_test_new)
+                        st.session_state['model_performance'] = model_performance
+                        st.session_state['performance_df'] = performance_df
+                        st.session_state['menu_option'] = "Graphs"
+                        st.experimental_rerun()
 
             else:
                 st.write("Error: The uploaded CSV file does not contain the required columns.")
