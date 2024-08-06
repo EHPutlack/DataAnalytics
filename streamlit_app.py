@@ -369,22 +369,21 @@ if menu_option == "Data Input":
                 st.write("The patient is predicted not to have ALS.")
 
 
-    elif data_input_option == "CSV Upload":
-        st.write("# Choose a CSV file")
-        uploaded_file = st.file_uploader("Upload", type="csv")
+elif data_input_option == "CSV Upload":
+    st.write("# Choose a CSV file")
+    uploaded_file = st.file_uploader("Upload", type="csv")
 
-        if uploaded_file is not None:
-            new_data = pd.read_csv(uploaded_file)
-            if set(parameters).issubset(new_data.columns):
-                new_data_scaled = scaler.transform(new_data[parameters])
-                model_choice = st.sidebar.selectbox("Choose a model", list(models.keys()))
-                model = models[model_choice]
-                predictions = model.predict(new_data_scaled)
-                new_data['ALS Prediction'] = predictions
-                st.write("Predictions for uploaded data:")
-                st.dataframe(new_data)
-            else:
-                st.write("Error: The uploaded CSV file does not contain the required columns.")
+    if uploaded_file is not None:
+        new_data = pd.read_csv(uploaded_file)
+        if set(parameters).issubset(new_data.columns):
+            new_data_scaled = scaler.transform(new_data[parameters])
+            model_choice = st.sidebar.selectbox("Choose a model", list(models.keys()))
+            model = models[model_choice]
+            predictions = model.predict(new_data_scaled)
+            st.write("Predictions for uploaded data:")
+            st.dataframe(new_data)
+        else:
+            st.write("Error: The uploaded CSV file does not contain the required columns.")
 
     elif data_input_option == "Example Data":
         st.write("# View Example Patients")
