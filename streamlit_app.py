@@ -382,6 +382,12 @@ if menu_option == "Data Input":
                 st.write("Predictions for uploaded data:")
                 st.dataframe(new_data)
                 
+                # Save selected metrics in session state
+                if 'metrics_to_plot' not in st.session_state:
+                    st.session_state['metrics_to_plot'] = []
+                if 'additional_metrics_to_plot' not in st.session_state:
+                    st.session_state['additional_metrics_to_plot'] = []
+
                 # Button to update graphs with new data
                 if st.button("Update Graphs"):
                     updated_model_performance = {}
@@ -455,36 +461,18 @@ if menu_option == "Data Input":
                     st.write(f"ROC AUC: {best_model['ROC AUC']:.2f}")
 
                     st.write("### Plotting the Updated Model Performance Comparison")
-                    metrics_to_plot = st.multiselect("Select metrics to plot", ["Accuracy", "Precision", "Recall", "F1 Score", "ROC AUC"])
+                    metrics_to_plot = st.multiselect("Select metrics to plot", ["Accuracy", "Precision", "Recall", "F1 Score", "ROC AUC"], default=st.session_state['metrics_to_plot'])
+                    st.session_state['metrics_to_plot'] = metrics_to_plot
                     if metrics_to_plot:
-                        ## fig = px.bar(performance_df, x="Model", y=metrics_to_plot, barmode="group")
-                        ## st.plotly_chart(fig)
-                        fig, ax = plt.subplots(figsize=(8, 6))
-                        performance_df.plot(kind="bar", x="Model", y=["Accuracy", "Precision", "Recall", "F1 Score", "ROC AUC"], ax=ax)
-                        ax.set_title("Model Performance Comparison")
-                        ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.6), ncol=2)
-                        temp_image_path = "model_performance_comparison.png"
-                        fig.savefig(temp_image_path, bbox_inches='tight')
-                        pdf.add_page()
-                        pdf.cell(200, 10, txt="Model Performance Comparison", ln=True, align="L")
-                        pdf.image(temp_image_path, w=180)  # Adjust width as needed
-                        temp_images.append(temp_image_path)
+                        fig = px.bar(performance_df, x="Model", y=metrics_to_plot, barmode="group")
+                        st.plotly_chart(fig)
 
                     st.write("### Additional Updated Model Performance Comparison")
-                    additional_metrics_to_plot = st.multiselect("Select additional metrics to plot", ["MCC", "Balanced Accuracy", "Cohen's Kappa", "Brier Score", "Logarithmic Loss", "F2 Score", "Jaccard Index", "Hamming Loss"])
+                    additional_metrics_to_plot = st.multiselect("Select additional metrics to plot", ["MCC", "Balanced Accuracy", "Cohen's Kappa", "Brier Score", "Logarithmic Loss", "F2 Score", "Jaccard Index", "Hamming Loss"], default=st.session_state['additional_metrics_to_plot'])
+                    st.session_state['additional_metrics_to_plot'] = additional_metrics_to_plot
                     if additional_metrics_to_plot:
-                        ## fig = px.bar(performance_df, x="Model", y=additional_metrics_to_plot, barmode="group")
-                        ## st.plotly_chart(fig)
-                        fig, ax = plt.subplots(figsize=(8, 6))
-                        performance_df.plot(kind="bar", x="Model", y=["MCC", "Balanced Accuracy", "Cohen's Kappa", "Brier Score", "Logarithmic Loss", "F2 Score", "Jaccard Index", "Hamming Loss"], ax=ax)
-                        ax.set_title("Additional Model Performance Comparison")
-                        ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.6), ncol=2)
-                        temp_image_path = "additional_model_performance_comparison.png"
-                        fig.savefig(temp_image_path, bbox_inches='tight')
-                        pdf.add_page()
-                        pdf.cell(200, 10, txt="Additional Model Performance Comparison", ln=True, align="L")
-                        pdf.image(temp_image_path, w=180)  # Adjust width as needed
-                        temp_images.append(temp_image_path)
+                        fig = px.bar(performance_df, x="Model", y=additional_metrics_to_plot, barmode="group")
+                        st.plotly_chart(fig)
 
     elif data_input_option == "Example Data":
         st.write("# View Example Patients")
@@ -520,13 +508,15 @@ elif menu_option == "Model Information":
     st.write(f"ROC AUC: {best_model['ROC AUC']:.2f}")
 
     st.write("### Plotting the Model Performance Comparison")
-    metrics_to_plot = st.multiselect("Select metrics to plot", ["Accuracy", "Precision", "Recall", "F1 Score", "ROC AUC"])
+    metrics_to_plot = st.multiselect("Select metrics to plot", ["Accuracy", "Precision", "Recall", "F1 Score", "ROC AUC"], default=st.session_state.get('metrics_to_plot', []))
+    st.session_state['metrics_to_plot'] = metrics_to_plot
     if metrics_to_plot:
         fig = px.bar(performance_df, x="Model", y=metrics_to_plot, barmode="group")
         st.plotly_chart(fig)
 
     st.write("### Additional Model Performance Comparison")
-    additional_metrics_to_plot = st.multiselect("Select additional metrics to plot", ["MCC", "Balanced Accuracy", "Cohen's Kappa", "Brier Score", "Logarithmic Loss", "F2 Score", "Jaccard Index", "Hamming Loss"])
+    additional_metrics_to_plot = st.multiselect("Select additional metrics to plot", ["MCC", "Balanced Accuracy", "Cohen's Kappa", "Brier Score", "Logarithmic Loss", "F2 Score", "Jaccard Index", "Hamming Loss"], default=st.session_state.get('additional_metrics_to_plot', []))
+    st.session_state['additional_metrics_to_plot'] = additional_metrics_to_plot
     if additional_metrics_to_plot:
         fig = px.bar(performance_df, x="Model", y=additional_metrics_to_plot, barmode="group")
         st.plotly_chart(fig)
@@ -606,7 +596,8 @@ elif menu_option == "Model Information":
 elif menu_option == "Graphs":
     st.write("# Graphs")
     st.sidebar.header("Graph Options")
-    graph_options = st.sidebar.multiselect("Select Graphs", ["Confusion Matrix", "ROC Curve", "Precision-Recall Curve", "Feature Importance"])
+    graph_options = st.sidebar.multiselect("Select Graphs", ["Confusion Matrix", "ROC Curve", "Precision-Recall Curve", "Feature Importance"], default=st.session_state.get('graph_options', []))
+    st.session_state['graph_options'] = graph_options
     selected_model = st.sidebar.selectbox("Select Model for Graphs", list(models.keys()))
     show_all_models = st.sidebar.button("Show All Models for Selected Graphs")
     show_graph_descriptions = st.sidebar.checkbox("Show Graph Descriptions")
