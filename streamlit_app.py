@@ -383,8 +383,8 @@ if menu_option == "Data Input":
                 st.dataframe(new_data)
                 
                 # Save selected metrics in session state
-                metrics_to_plot = st.multiselect("Select metrics to plot", ["Accuracy", "Precision", "Recall", "F1 Score", "ROC AUC"])
-                additional_metrics_to_plot = st.multiselect("Select additional metrics to plot", ["MCC", "Balanced Accuracy", "Cohen's Kappa", "Brier Score", "Logarithmic Loss", "F2 Score", "Jaccard Index", "Hamming Loss"])
+                metrics_to_plot = st.multiselect("Select metrics to plot", ["Accuracy", "Precision", "Recall", "F1 Score", "ROC AUC"], default=[])
+                additional_metrics_to_plot = st.multiselect("Select additional metrics to plot", ["MCC", "Balanced Accuracy", "Cohen's Kappa", "Brier Score", "Logarithmic Loss", "F2 Score", "Jaccard Index", "Hamming Loss"], default=[])
 
                 def update_graphs():
                     st.session_state.metrics_to_plot = metrics_to_plot
@@ -463,13 +463,13 @@ if menu_option == "Data Input":
                     st.write(f"ROC AUC: {best_model['ROC AUC']:.2f}")
 
                     st.write("### Plotting the Updated Model Performance Comparison")
-                    if metrics_to_plot:
-                        fig = px.bar(performance_df, x="Model", y=metrics_to_plot, barmode="group")
+                    if st.session_state.get("metrics_to_plot"):
+                        fig = px.bar(performance_df, x="Model", y=st.session_state.get("metrics_to_plot"), barmode="group")
                         st.plotly_chart(fig)
 
                     st.write("### Additional Updated Model Performance Comparison")
-                    if additional_metrics_to_plot:
-                        fig = px.bar(performance_df, x="Model", y=additional_metrics_to_plot, barmode="group")
+                    if st.session_state.get("additional_metrics_to_plot"):
+                        fig = px.bar(performance_df, x="Model", y=st.session_state.get("additional_metrics_to_plot"), barmode="group")
                         st.plotly_chart(fig)
 
     elif data_input_option == "Example Data":
@@ -506,13 +506,13 @@ elif menu_option == "Model Information":
     st.write(f"ROC AUC: {best_model['ROC AUC']:.2f}")
 
     st.write("### Plotting the Model Performance Comparison")
-    metrics_to_plot = st.multiselect("Select metrics to plot", ["Accuracy", "Precision", "Recall", "F1 Score", "ROC AUC"])
+    metrics_to_plot = st.multiselect("Select metrics to plot", ["Accuracy", "Precision", "Recall", "F1 Score", "ROC AUC"], default=[])
     if metrics_to_plot:
         fig = px.bar(performance_df, x="Model", y=metrics_to_plot, barmode="group")
         st.plotly_chart(fig)
 
     st.write("### Additional Model Performance Comparison")
-    additional_metrics_to_plot = st.multiselect("Select additional metrics to plot", ["MCC", "Balanced Accuracy", "Cohen's Kappa", "Brier Score", "Logarithmic Loss", "F2 Score", "Jaccard Index", "Hamming Loss"])
+    additional_metrics_to_plot = st.multiselect("Select additional metrics to plot", ["MCC", "Balanced Accuracy", "Cohen's Kappa", "Brier Score", "Logarithmic Loss", "F2 Score", "Jaccard Index", "Hamming Loss"], default=[])
     if additional_metrics_to_plot:
         fig = px.bar(performance_df, x="Model", y=additional_metrics_to_plot, barmode="group")
         st.plotly_chart(fig)
@@ -592,7 +592,7 @@ elif menu_option == "Model Information":
 elif menu_option == "Graphs":
     st.write("# Graphs")
     st.sidebar.header("Graph Options")
-    graph_options = st.sidebar.multiselect("Select Graphs", ["Confusion Matrix", "ROC Curve", "Precision-Recall Curve", "Feature Importance"])
+    graph_options = st.sidebar.multiselect("Select Graphs", ["Confusion Matrix", "ROC Curve", "Precision-Recall Curve", "Feature Importance"], default=[])
     selected_model = st.sidebar.selectbox("Select Model for Graphs", list(models.keys()))
     show_all_models = st.sidebar.button("Show All Models for Selected Graphs")
     show_graph_descriptions = st.sidebar.checkbox("Show Graph Descriptions")
@@ -726,7 +726,7 @@ elif menu_option == "Accessibility Settings":
     if color_theme == "High Contrast":
         st.write("<style>body {background-color: black; color: white;}</style>", unsafe_allow_html=True)
     elif color_theme is "Colorblind Friendly":
-        st.write("<style>body {background-color: white; color: black;}</style>", unsafe_allow_html=True)
+        st.write("<style>body {background-color: white; color: black;}}</style>", unsafe_allow_html=True)
 
     language = st.sidebar.radio("Select Language", ["English", "Spanish", "French"])
     if language == "Spanish":
