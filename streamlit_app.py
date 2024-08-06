@@ -381,6 +381,7 @@ elif data_input_option == "CSV Upload":
             model = models[model_choice]
             predictions = model.predict(new_data_scaled)
             st.write("Predictions for uploaded data:")
+            st.write(predictions)
             st.dataframe(new_data)
         else:
             st.write("Error: The uploaded CSV file does not contain the required columns.")
