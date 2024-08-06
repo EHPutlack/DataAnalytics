@@ -457,14 +457,34 @@ if menu_option == "Data Input":
                     st.write("### Plotting the Updated Model Performance Comparison")
                     metrics_to_plot = st.multiselect("Select metrics to plot", ["Accuracy", "Precision", "Recall", "F1 Score", "ROC AUC"])
                     if metrics_to_plot:
-                        fig = px.bar(performance_df, x="Model", y=metrics_to_plot, barmode="group")
-                        st.plotly_chart(fig)
+                        ## fig = px.bar(performance_df, x="Model", y=metrics_to_plot, barmode="group")
+                        ## st.plotly_chart(fig)
+                        fig, ax = plt.subplots(figsize=(8, 6))
+                        performance_df.plot(kind="bar", x="Model", y=["Accuracy", "Precision", "Recall", "F1 Score", "ROC AUC"], ax=ax)
+                        ax.set_title("Model Performance Comparison")
+                        ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.6), ncol=2)
+                        temp_image_path = "model_performance_comparison.png"
+                        fig.savefig(temp_image_path, bbox_inches='tight')
+                        pdf.add_page()
+                        pdf.cell(200, 10, txt="Model Performance Comparison", ln=True, align="L")
+                        pdf.image(temp_image_path, w=180)  # Adjust width as needed
+                        temp_images.append(temp_image_path)
 
                     st.write("### Additional Updated Model Performance Comparison")
                     additional_metrics_to_plot = st.multiselect("Select additional metrics to plot", ["MCC", "Balanced Accuracy", "Cohen's Kappa", "Brier Score", "Logarithmic Loss", "F2 Score", "Jaccard Index", "Hamming Loss"])
                     if additional_metrics_to_plot:
-                        fig = px.bar(performance_df, x="Model", y=additional_metrics_to_plot, barmode="group")
-                        st.plotly_chart(fig)
+                        ## fig = px.bar(performance_df, x="Model", y=additional_metrics_to_plot, barmode="group")
+                        ## st.plotly_chart(fig)
+                        fig, ax = plt.subplots(figsize=(8, 6))
+                        performance_df.plot(kind="bar", x="Model", y=["MCC", "Balanced Accuracy", "Cohen's Kappa", "Brier Score", "Logarithmic Loss", "F2 Score", "Jaccard Index", "Hamming Loss"], ax=ax)
+                        ax.set_title("Additional Model Performance Comparison")
+                        ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.6), ncol=2)
+                        temp_image_path = "additional_model_performance_comparison.png"
+                        fig.savefig(temp_image_path, bbox_inches='tight')
+                        pdf.add_page()
+                        pdf.cell(200, 10, txt="Additional Model Performance Comparison", ln=True, align="L")
+                        pdf.image(temp_image_path, w=180)  # Adjust width as needed
+                        temp_images.append(temp_image_path)
 
     elif data_input_option == "Example Data":
         st.write("# View Example Patients")
