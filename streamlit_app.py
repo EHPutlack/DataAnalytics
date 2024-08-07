@@ -119,7 +119,14 @@ def create_realistic_data(num_patients=1000):
     df = pd.DataFrame(data, columns=parameters)
     df['ALS'] = labels
     return df
-    
+
+# Global variable for performance dataframe
+performance_df = pd.DataFrame()
+
+def update_performance_df(new_df):
+    global performance_df
+    performance_df = new_df
+
 # Load the data into a database
 df = create_realistic_data()
 
@@ -205,8 +212,7 @@ for model_name, model in models.items():
         "Hamming Loss": hamming
     })
 
-global performance_df
-performance_df = pd.DataFrame(performance_metrics)  # Ensure this is defined before using it
+update_performance_df(pd.DataFrame(performance_metrics))  # Ensure this is defined before using it
 
 # Sidebar menu
 st.sidebar.title("Menu Options")
@@ -234,7 +240,7 @@ if st.sidebar.button("Save Report to PDF"):
     pdf.cell(200, 10, txt="ALS Detection Model Report", ln=True, align="C")
 
     pdf.cell(200, 10, txt="Model Performance Comparison", ln=True, align="L")
-    performance_summary = pd.DataFrame(performance_metrics).to_string(index=False)
+    performance_summary = performance_df.to_string(index=False)
     pdf.multi_cell(0, 10, performance_summary)
 
     temp_images = []
@@ -384,8 +390,7 @@ if menu_option == "Data Input":
                 st.dataframe(new_data)
                 
                 # Update performance_df with the uploaded data
-                global performance_df
-                performance_df = new_data
+                update_performance_df(new_data)
 
     elif data_input_option == "Example Data":
         st.write("# View Example Patients")
@@ -410,11 +415,9 @@ if menu_option == "Data Input":
 elif menu_option == "Model Information":
     st.write("# Model Performance Comparison")
 
-    st.session_state['performance_df'] = performance_df
+    st.dataframe(performance_df)
 
-    st.dataframe(st.session_state['performance_df'])
-
-    best_model = st.session_state['performance_df'].loc[st.session_state['performance_df']["Accuracy"].idxmax()]
+    best_model = performance_df.loc[performance_df["Accuracy"].idxmax()]
     st.write(f"### Best Model: {best_model['Model']}")
     st.write(f"Accuracy: {best_model['Accuracy']:.2f}")
     st.write(f"Precision: {best_model['Precision']:.2f}")
@@ -425,13 +428,13 @@ elif menu_option == "Model Information":
     st.write("### Plotting the Model Performance Comparison")
     metrics_to_plot = st.multiselect("Select metrics to plot", ["Accuracy", "Precision", "Recall", "F1 Score", "ROC AUC"], default=[])
     if metrics_to_plot:
-        fig = px.bar(st.session_state['performance_df'], x="Model", y=metrics_to_plot, barmode="group")
+        fig = px.bar(performance_df, x="Model", y=metrics_to_plot, barmode="group")
         st.plotly_chart(fig)
 
     st.write("### Additional Model Performance Comparison")
     additional_metrics_to_plot = st.multiselect("Select additional metrics to plot", ["MCC", "Balanced Accuracy", "Cohen's Kappa", "Brier Score", "Logarithmic Loss", "F2 Score", "Jaccard Index", "Hamming Loss"], default=[])
     if additional_metrics_to_plot:
-        fig = px.bar(st.session_state['performance_df'], x="Model", y=additional_metrics_to_plot, barmode="group")
+        fig = px.bar(performance_df, x="Model", y=additional_metrics_to_plot, barmode="group")
         st.plotly_chart(fig)
 
     # Descriptions of metrics
