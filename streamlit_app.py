@@ -381,6 +381,9 @@ if menu_option == "Data Input":
                 new_data['ALS Prediction'] = predictions
                 st.write("Predictions for uploaded data:")
                 st.dataframe(new_data)
+                
+                # Update performance_df with the uploaded data
+                performance_df = new_data
 
     elif data_input_option == "Example Data":
         st.write("# View Example Patients")
@@ -405,8 +408,7 @@ if menu_option == "Data Input":
 elif menu_option == "Model Information":
     st.write("# Model Performance Comparison")
 
-    if 'performance_df' not in st.session_state:
-        st.session_state['performance_df'] = performance_df
+    st.session_state['performance_df'] = performance_df
 
     st.dataframe(st.session_state['performance_df'])
 
