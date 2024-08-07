@@ -205,6 +205,7 @@ for model_name, model in models.items():
         "Hamming Loss": hamming
     })
 
+global
 performance_df = pd.DataFrame(performance_metrics)  # Ensure this is defined before using it
 
 # Sidebar menu
