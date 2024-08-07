@@ -495,9 +495,12 @@ if menu_option == "Data Input":
 elif menu_option == "Model Information":
     st.write("# Model Performance Comparison")
 
-    st.dataframe(performance_df)
+    if 'performance_df' not in st.session_state:
+        st.session_state['performance_df'] = performance_df
 
-    best_model = performance_df.loc[performance_df["Accuracy"].idxmax()]
+    st.dataframe(st.session_state['performance_df'])
+
+    best_model = st.session_state['performance_df'].loc[st.session_state['performance_df']["Accuracy"].idxmax()]
     st.write(f"### Best Model: {best_model['Model']}")
     st.write(f"Accuracy: {best_model['Accuracy']:.2f}")
     st.write(f"Precision: {best_model['Precision']:.2f}")
@@ -508,13 +511,13 @@ elif menu_option == "Model Information":
     st.write("### Plotting the Model Performance Comparison")
     metrics_to_plot = st.multiselect("Select metrics to plot", ["Accuracy", "Precision", "Recall", "F1 Score", "ROC AUC"], default=[])
     if metrics_to_plot:
-        fig = px.bar(performance_df, x="Model", y=metrics_to_plot, barmode="group")
+        fig = px.bar(st.session_state['performance_df'], x="Model", y=metrics_to_plot, barmode="group")
         st.plotly_chart(fig)
 
     st.write("### Additional Model Performance Comparison")
     additional_metrics_to_plot = st.multiselect("Select additional metrics to plot", ["MCC", "Balanced Accuracy", "Cohen's Kappa", "Brier Score", "Logarithmic Loss", "F2 Score", "Jaccard Index", "Hamming Loss"], default=[])
     if additional_metrics_to_plot:
-        fig = px.bar(performance_df, x="Model", y=additional_metrics_to_plot, barmode="group")
+        fig = px.bar(st.session_state['performance_df'], x="Model", y=additional_metrics_to_plot, barmode="group")
         st.plotly_chart(fig)
 
     # Descriptions of metrics
