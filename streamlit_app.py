@@ -109,7 +109,7 @@ def create_realistic_data(num_patients=1000):
         np.random.normal(30, 10, num_patients),        # Respiratory Capacity
     ])
 
-    labels = np.concatenate([np.ones(num_patients // 2), np.zeros(num_patients // 2)])
+    labels = np.concatenate([np.ones(num_patients // 2), np.zeros(num_patients - (num_patients // 2))])
     df = pd.DataFrame(data, columns=parameters)
     df['ALS'] = labels
     return df
