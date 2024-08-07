@@ -383,6 +383,7 @@ if menu_option == "Data Input":
                 st.dataframe(new_data)
                 
                 # Update performance_df with the uploaded data
+                global performance_df
                 performance_df = new_data
 
     elif data_input_option == "Example Data":
