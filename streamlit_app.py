@@ -276,7 +276,7 @@ def main():
     data_handler = DataHandler()
     model_handler = ModelHandler(data_handler)
 
-    choice = st.radio("Choose an option to provide patient data:", ("Upload Excel File", "Enter Data Manually"))
+    choice = st.radio("Choose an option to provide patient data:", ("Upload Excel File", "Enter Data Manually"), key="input_choice")
 
     if choice == "Upload Excel File":
         df = data_handler.load_data()
@@ -286,10 +286,10 @@ def main():
     else:
         patient_data = []
         for param in data_handler.parameters:
-            value = st.number_input(f"Enter {param}", value=0.0, key=param)
+            value = st.number_input(f"Enter {param}", value=0.0, key=f"input_{param}")
             patient_data.append(value)
 
-    if st.button("Predict Disease State"):
+    if st.button("Predict Disease State", key="predict_button"):
         prediction, probability = model_handler.predict_disease_state(patient_data)
         st.write(f"Prediction: {'ALS' if prediction[0] == 1 else 'No ALS'}")
         st.write(f"Probability of ALS: {probability[0]:.2f}")
@@ -325,7 +325,7 @@ def main():
             fig = px.bar(performance_df, x="Model", y=metrics_to_plot, barmode="group")
             st.plotly_chart(fig)
 
-        if st.sidebar.button("Save Report to PDF"):
+        if st.sidebar.button("Save Report to PDF", key="save_report_button"):
             report_handler = ReportHandler(model_performance, performance_df)
             report_handler.save_report_to_pdf()
 
