@@ -44,7 +44,7 @@ class DataHandler:
         return general_parameters + als_specific_parameters
     
     @st.cache_data
-    def create_realistic_data(_self, num_patients=1000):
+    def create_realistic_data(self, num_patients=1000):
         np.random.seed(0)
         data = np.column_stack([
             np.random.normal(70, 10, num_patients),        
@@ -81,12 +81,12 @@ class DataHandler:
 
         half_patients = num_patients // 2
         labels = np.concatenate([np.ones(half_patients), np.zeros(num_patients - half_patients)])
-        df = pd.DataFrame(data, columns=_self.parameters)
+        df = pd.DataFrame(data, columns=self.parameters)
         df['ALS'] = labels
         return df
     
     def load_data(self):
-        uploaded_file = st.file_uploader("Upload an Excel file", type=["xlsx"], key="file_uploader")
+        uploaded_file = st.file_uploader("Upload an Excel file", type=["xlsx"])
         if uploaded_file is not None:
             try:
                 df = pd.read_excel(uploaded_file)
@@ -285,8 +285,8 @@ def main():
         patient_data = df.iloc[0].drop("ALS").values
     else:
         patient_data = []
-        for param in data_handler.parameters:
-            value = st.number_input(f"Enter {param}", value=0.0, key=f"input_{param}")
+        for idx, param in enumerate(data_handler.parameters):
+            value = st.number_input(f"Enter {param}", value=0.0, key=f"input_{idx}")
             patient_data.append(value)
 
     if st.button("Predict Disease State", key="predict_button"):
