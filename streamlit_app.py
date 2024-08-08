@@ -88,7 +88,11 @@ class DataHandler:
     def load_data(self):
         uploaded_file = st.file_uploader("Upload an Excel file", type=["xlsx"])
         if uploaded_file is not None:
-            df = pd.read_excel(uploaded_file)
+            try:
+                df = pd.read_excel(uploaded_file)
+            except ImportError:
+                st.error("Missing optional dependency 'openpyxl'. Use pip or conda to install openpyxl.")
+                return None
         else:
             df = self.create_realistic_data()
         return df
@@ -267,6 +271,8 @@ def main():
 
     # Load data
     df = data_handler.load_data()
+    if df is None:
+        return
 
     # Preprocess data
     X_train, X_test, y_train, y_test = model_handler.preprocess_data(df)
