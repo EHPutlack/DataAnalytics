@@ -116,7 +116,6 @@ class DataHandler:
         df['ALS'] = labels
         return df
     
-    @st.cache
     def load_data(self):
         uploaded_file = st.file_uploader("Upload an Excel file", type=["xlsx"])
         if uploaded_file is not None:
