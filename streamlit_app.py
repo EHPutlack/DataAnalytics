@@ -44,7 +44,7 @@ class DataHandler:
         return general_parameters + als_specific_parameters
     
     @st.cache_data
-    def create_realistic_data(self, num_patients=1000):
+    def create_realistic_data(_self, num_patients=1000):
         np.random.seed(0)
         data = np.column_stack([
             np.random.normal(70, 10, num_patients),        
@@ -81,7 +81,7 @@ class DataHandler:
 
         half_patients = num_patients // 2
         labels = np.concatenate([np.ones(half_patients), np.zeros(num_patients - half_patients)])
-        df = pd.DataFrame(data, columns=self.parameters)
+        df = pd.DataFrame(data, columns=_self.parameters)
         df['ALS'] = labels
         return df
     
@@ -227,7 +227,7 @@ class ReportHandler:
 
         if "Model Performance Comparison" in graph_options:
             fig, ax = plt.subplots(figsize=(8, 6))
-            self.performance_df.plot(kind="bar", x="Model", y=["Accuracy", "Precision", "Recall", "F1 Score", "ROC AUC"], ax=ax)
+            self.performance_df.plot(kind="bar", x="Model", y=["accuracy", "precision", "recall", "f1", "roc_auc"], ax=ax)
             ax.set_title("Model Performance Comparison")
             ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.6), ncol=2)
             temp_image_path = "model_performance_comparison.png"
@@ -238,7 +238,7 @@ class ReportHandler:
             temp_images.append(temp_image_path)
 
             fig, ax = plt.subplots(figsize=(8, 6))
-            self.performance_df.plot(kind="bar", x="Model", y=["MCC", "Balanced Accuracy", "Cohen's Kappa", "Brier Score", "Logarithmic Loss", "F2 Score", "Jaccard Index", "Hamming Loss"], ax=ax)
+            self.performance_df.plot(kind="bar", x="Model", y=["mcc", "balanced_accuracy", "kappa", "brier", "logloss", "f2", "jaccard", "hamming"], ax=ax)
             ax.set_title("Additional Model Performance Comparison")
             ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.6), ncol=2)
             temp_image_path = "additional_model_performance_comparison.png"
