@@ -146,7 +146,8 @@ class ModelHandler:
             }
 
             model_performance[model_name] = {"model": model, **metrics}
-            performance_metrics.append({"Model": model_name, **metrics})
+            performance_metrics.append({key: metrics[key] for key in metrics if key != "confusion_matrix"})
+            performance_metrics[-1]["Model"] = model_name
 
         self.performance_df = pd.DataFrame(performance_metrics)
         return model_performance, self.performance_df
