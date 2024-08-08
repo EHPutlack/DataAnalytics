@@ -155,6 +155,13 @@ class ModelHandler:
 
         self.performance_df = pd.DataFrame(performance_metrics)
         return model_performance, self.performance_df
+    
+    def predict_disease_state(self, patient_data):
+        model = self.models["Random Forest"]  # You can choose the best model based on performance
+        scaled_data = self.data_handler.scaler.transform([patient_data])
+        prediction = model.predict(scaled_data)
+        probability = model.predict_proba(scaled_data)[:, 1]
+        return prediction, probability
 
 class ReportHandler:
     def __init__(self, model_performance, performance_df):
@@ -267,6 +274,26 @@ def main():
     st.title("ALS Detection Model")
 
     data_handler = DataHandler()
+    model_handler = ModelHandler(data_handler)
+
+    choice = st.radio("Choose an option to provide patient data:", ("Upload Excel File", "Enter Data Manually"))
+
+    if choice == "Upload Excel File":
+        df = data_handler.load_data()
+        if df is None:
+            return
+        patient_data = df.iloc[0].drop("ALS").values
+    else:
+        patient_data = []
+        for param in data_handler.parameters:
+            value = st.number_input(f"Enter {param}", value=0.0)
+            patient_data.append(value)
+
+    if st.button("Predict Disease State"):
+        prediction, probability = model_handler.predict_disease_state(patient_data)
+        st.write(f"Prediction: {'ALS' if prediction[0] == 1 else 'No ALS'}")
+        st.write(f"Probability of ALS: {probability[0]:.2f}")
+
     model_handler = ModelHandler(data_handler)
 
     # Load data
