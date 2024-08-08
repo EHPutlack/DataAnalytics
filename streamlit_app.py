@@ -21,6 +21,38 @@ from io import BytesIO
 import base64
 import os
 
+def load_css(file_name):
+    with open(file_name) as f:
+        st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
+
+def img_to_base64(file_path):
+    with open(file_path, "rb") as img_file:
+        return base64.b64encode(img_file.read()).decode()
+
+def display_logo():
+    logo_base64 = img_to_base64("Logo.PNG")
+    st.markdown(
+        f"""
+        <style>
+        .logo-container {{
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            position: fixed;
+            bottom: 50px;
+            right: 10px;
+        }}
+        .logo-container img {{
+            width: 100px;  /* Adjust the width as needed */
+        }}
+        </style>
+        <div class="logo-container">
+            <img src="data:image/png;base64,{logo_base64}" alt="Logo">
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
 class DataHandler:
     def __init__(self):
         self.parameters = self.define_parameters()
@@ -157,7 +189,7 @@ class ModelHandler:
         return model_performance, self.performance_df
     
     def predict_disease_state(self, patient_data):
-        model = self.models["Random Forest"]  # You can choose the best model based on performance
+        model = self.models["Random Forest"]
         scaled_data = self.data_handler.scaler.transform([patient_data])
         prediction = model.predict(scaled_data)
         probability = model.predict_proba(scaled_data)[:, 1]
@@ -272,6 +304,9 @@ class ReportHandler:
 
 def main():
     st.title("ALS Detection Model")
+
+    load_css("styles.css")
+    display_logo()
 
     data_handler = DataHandler()
     model_handler = ModelHandler(data_handler)
