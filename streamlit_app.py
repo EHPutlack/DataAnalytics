@@ -75,7 +75,6 @@ class DataHandler:
 
         return general_parameters + als_specific_parameters
     
-    @st.cache_data
     def create_realistic_data(self, num_patients=1000):
         np.random.seed(0)
         data = np.column_stack([
@@ -117,6 +116,7 @@ class DataHandler:
         df['ALS'] = labels
         return df
     
+    @st.cache
     def load_data(self):
         uploaded_file = st.file_uploader("Upload an Excel file", type=["xlsx"])
         if uploaded_file is not None:
