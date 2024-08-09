@@ -169,9 +169,6 @@ class ALSDetectionApp:
             })
 
         self.performance_df = pd.DataFrame(performance_metrics)
-        
-        # Debugging step: print the columns of the DataFrame
-        st.write("Columns in performance_df:", self.performance_df.columns.tolist())
 
     @staticmethod
     def calculate_metrics(y_test, y_pred, y_prob):
@@ -193,6 +190,9 @@ class ALSDetectionApp:
             "roc_curve": roc_curve(y_test, y_prob),
             "precision_recall_curve": precision_recall_curve(y_test, y_prob)
         }
+
+    def update_performance_df(self, new_data):
+        self.performance_df = self.performance_df.append(new_data, ignore_index=True)
 
     def run(self):
         st.sidebar.title("Menu Options")
@@ -410,7 +410,6 @@ class ALSDetectionApp:
 
         if 'accuracy' not in self.performance_df.columns:
             st.write("Error: 'Accuracy' column not found in performance_df.")
-            st.write("Available columns:", self.performance_df.columns.tolist())
             return
 
         st.dataframe(self.performance_df)
