@@ -21,6 +21,38 @@ from io import BytesIO
 import base64
 import os
 
+def load_css(file_name):
+    with open(file_name) as f:
+        st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
+
+def img_to_base64(file_path):
+    with open(file_path, "rb") as img_file:
+        return base64.b64encode(img_file.read()).decode()
+
+def display_logo():
+    logo_base64 = img_to_base64("Logo.PNG")
+    st.markdown(
+        f"""
+        <style>
+        .logo-container {{
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            position: fixed;
+            bottom: 50px;
+            right: 10px;
+        }}
+        .logo-container img {{
+            width: 100px;  /* Adjust the width as needed */
+        }}
+        </style>
+        <div class="logo-container">
+            <img src="data:image/png;base64,{logo_base64}" alt="Logo">
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
 class DataHandler:
     def __init__(self):
         self.parameters = self.define_parameters()
@@ -44,7 +76,7 @@ class DataHandler:
         return general_parameters + als_specific_parameters
     
     @st.cache_data
-    def create_realistic_data(self, num_patients=1000):
+    def create_realistic_data(self, _self=None, num_patients=1000):
         np.random.seed(0)
         data = np.column_stack([
             np.random.normal(70, 10, num_patients),        
@@ -164,8 +196,7 @@ class ReportHandler:
             if "ROC Curve" in graph_options:
                 fig, ax = plt.subplots(figsize=(8, 6))  
                 fpr, tpr, _ = metrics["roc_curve"]
-                ax.plot(fpr, tpr, label=f"{model_name} (AUC = {metrics['roc_auc']:.2f})")
-                ax.plot([0, 1], [0, 1], linestyle="--")
+                ax.plot(fpr, tpr, label=f"ROC curve (area = {metrics['roc_auc']:.2f})")
                 ax.set_title(f"ROC Curve for {model_name}")
                 ax.set_xlabel("False Positive Rate")
                 ax.set_ylabel("True Positive Rate")
@@ -180,7 +211,7 @@ class ReportHandler:
             if "Precision-Recall Curve" in graph_options:
                 fig, ax = plt.subplots(figsize=(8, 6))  
                 precision, recall, _ = metrics["precision_recall_curve"]
-                ax.plot(recall, precision, label=f"{model_name}")
+                ax.plot(recall, precision, label=f"PR curve for {model_name}")
                 ax.set_title(f"Precision-Recall Curve for {model_name}")
                 ax.set_xlabel("Recall")
                 ax.set_ylabel("Precision")
@@ -194,7 +225,7 @@ class ReportHandler:
 
             if "Feature Importance" in graph_options and hasattr(metrics["model"], "feature_importances_"):
                 feature_importance = pd.DataFrame({
-                    'Feature': data_handler.parameters,
+                    'Feature': self.data_handler.parameters,
                     'Importance': metrics["model"].feature_importances_
                 }).sort_values(by='Importance', ascending=False)
                 fig, ax = plt.subplots(figsize=(8, 6))  
@@ -310,4 +341,6 @@ def main():
             report_handler.save_report_to_pdf()
 
 if __name__ == "__main__":
+    load_css('styles.css')
+    display_logo()
     main()
