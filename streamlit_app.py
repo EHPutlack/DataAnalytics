@@ -21,43 +21,11 @@ from io import BytesIO
 import base64
 import os
 
-def load_css(file_name):
-    with open(file_name) as f:
-        st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
-
-def img_to_base64(file_path):
-    with open(file_path, "rb") as img_file:
-        return base64.b64encode(img_file.read()).decode()
-
-def display_logo():
-    logo_base64 = img_to_base64("Logo.PNG")
-    st.markdown(
-        f"""
-        <style>
-        .logo-container {{
-            display: flex;
-            justify-content: flex-start;
-            align-items: center;
-            position: fixed;
-            bottom: 50px;
-            right: 10px;
-        }}
-        .logo-container img {{
-            width: 100px;  /* Adjust the width as needed */
-        }}
-        </style>
-        <div class="logo-container">
-            <img src="data:image/png;base64,{logo_base64}" alt="Logo">
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
 class DataHandler:
     def __init__(self):
         self.parameters = self.define_parameters()
-        self.scaler = None  # We'll initialize the scaler in a method
-
+        self.scaler = StandardScaler()
+    
     def define_parameters(self):
         general_parameters = [
             'Heart Rate', 'Blood Pressure Systolic', 'Blood Pressure Diastolic',
@@ -75,6 +43,7 @@ class DataHandler:
 
         return general_parameters + als_specific_parameters
     
+    @st.cache_data
     def create_realistic_data(self, num_patients=1000):
         np.random.seed(0)
         data = np.column_stack([
@@ -114,26 +83,19 @@ class DataHandler:
         labels = np.concatenate([np.ones(half_patients), np.zeros(num_patients - half_patients)])
         df = pd.DataFrame(data, columns=self.parameters)
         df['ALS'] = labels
-
-        # Fit the scaler here
-        self.scaler = StandardScaler().fit(df.drop(columns=['ALS']))
-        
         return df
     
     def load_data(self, key_suffix=""):
-        uploaded_file = st.file_uploader(f"Upload an Excel file{key_suffix}", type=["xlsx"], key=f"file_uploader_{key_suffix}")
+        uploaded_file = st.file_uploader(f"Upload an Excel file {key_suffix}", type=["xlsx"], key=f"file_uploader_{key_suffix}")
         if uploaded_file is not None:
             try:
                 df = pd.read_excel(uploaded_file)
-                if self.scaler is None:
-                    self.scaler = StandardScaler().fit(df.drop(columns=['ALS']))  # Fit the scaler if not done yet
             except ImportError:
                 st.error("Missing optional dependency 'openpyxl'. Use pip or conda to install openpyxl.")
                 return None
         else:
             df = self.create_realistic_data()
         return df
-
 
 class ModelHandler:
     def __init__(self, data_handler):
@@ -156,44 +118,14 @@ class ModelHandler:
     def preprocess_data(self, df):
         X = df.drop(columns=['ALS'])
         y = df['ALS']
-        X_scaled = self.data_handler.scaler.fit_transform(X)
+        X_scaled = self.data_handler.scaler.fit_transform(X)  # Fit the scaler with the data
         return train_test_split(X_scaled, y, test_size=0.2, random_state=0)
 
-    def evaluate_models(self, X_train, X_test, y_train, y_test):
-        performance_metrics = []
-        model_performance = {}
+    def train_model(self, model_name, X_train, y_train):
+        model = self.models[model_name]
+        model.fit(X_train, y_train)  # Fit the model with training data
+        return model
 
-        for model_name, model in self.models.items():
-            model.fit(X_train, y_train)
-            y_pred = model.predict(X_test)
-            y_prob = model.predict_proba(X_test)[:, 1] if hasattr(model, "predict_proba") else [0] * len(y_test)
-
-            metrics = {
-                "accuracy": accuracy_score(y_test, y_pred),
-                "precision": precision_score(y_test, y_pred),
-                "recall": recall_score(y_test, y_pred),
-                "f1": f1_score(y_test, y_pred),
-                "roc_auc": roc_auc_score(y_test, y_prob),
-                "mcc": matthews_corrcoef(y_test, y_pred),
-                "balanced_accuracy": balanced_accuracy_score(y_test, y_pred),
-                "kappa": cohen_kappa_score(y_test, y_pred),
-                "brier": brier_score_loss(y_test, y_prob),
-                "logloss": log_loss(y_test, y_prob),
-                "f2": fbeta_score(y_test, y_pred, beta=2),
-                "jaccard": jaccard_score(y_test, y_pred),
-                "hamming": hamming_loss(y_test, y_pred),
-                "confusion_matrix": confusion_matrix(y_test, y_pred),
-                "roc_curve": roc_curve(y_test, y_prob),
-                "precision_recall_curve": precision_recall_curve(y_test, y_prob)
-            }
-
-            model_performance[model_name] = {"model": model, **metrics}
-            performance_metrics.append({key: metrics[key] for key in metrics if key != "confusion_matrix"})
-            performance_metrics[-1]["Model"] = model_name
-
-        self.performance_df = pd.DataFrame(performance_metrics)
-        return model_performance, self.performance_df
-    
     def predict_disease_state(self, patient_data):
         model = self.models["Random Forest"]
         scaled_data = self.data_handler.scaler.transform([patient_data])
@@ -311,39 +243,51 @@ class ReportHandler:
 def main():
     st.title("ALS Detection Model")
 
-    load_css("styles.css")
-    display_logo()
-
     data_handler = DataHandler()
     model_handler = ModelHandler(data_handler)
 
     choice = st.radio("Choose an option to provide patient data:", ("Upload Excel File", "Enter Data Manually"), key="input_choice")
 
     if choice == "Upload Excel File":
-        df = data_handler.load_data(key_suffix="upload_excel")
+        df = data_handler.load_data(key_suffix="upload")
         if df is None:
             return
         patient_data = df.iloc[0].drop("ALS").values
+
+        # Preprocess data and train the model
+        X_train, X_test, y_train, y_test = model_handler.preprocess_data(df)
+        model_handler.train_model("Random Forest", X_train, y_train)
+
     else:
         patient_data = []
         for idx, param in enumerate(data_handler.parameters):
             value = st.number_input(f"Enter {param}", value=0.0, key=f"input_{idx}")
             patient_data.append(value)
 
+        # Train the model on sample data if no file is uploaded
+        df = data_handler.create_realistic_data()
+        X_train, X_test, y_train, y_test = model_handler.preprocess_data(df)
+        model_handler.train_model("Random Forest", X_train, y_train)
+
     if st.button("Predict Disease State", key="predict_button"):
         prediction, probability = model_handler.predict_disease_state(patient_data)
         st.write(f"Prediction: {'ALS' if prediction[0] == 1 else 'No ALS'}")
         st.write(f"Probability of ALS: {probability[0]:.2f}")
 
+    # Load and evaluate models only if not predicting
     if choice == "Upload Excel File":
-        df = data_handler.load_data(key_suffix="upload_excel_evaluation")
+        # Load data
+        df = data_handler.load_data(key_suffix="evaluate")
         if df is None:
             return
 
+        # Preprocess data
         X_train, X_test, y_train, y_test = model_handler.preprocess_data(df)
 
+        # Evaluate models
         model_performance, performance_df = model_handler.evaluate_models(X_train, X_test, y_train, y_test)
 
+        # Display model performance
         st.write("# Model Performance Comparison")
         st.dataframe(performance_df)
 
