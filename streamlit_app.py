@@ -116,8 +116,8 @@ class DataHandler:
         df['ALS'] = labels
         return df
     
-    def load_data(self):
-        uploaded_file = st.file_uploader("Upload an Excel file", type=["xlsx"], key="file_uploader")
+    def load_data(self, key_suffix=""):
+        uploaded_file = st.file_uploader(f"Upload an Excel file{key_suffix}", type=["xlsx"], key=f"file_uploader_{key_suffix}")
         if uploaded_file is not None:
             try:
                 df = pd.read_excel(uploaded_file)
@@ -313,7 +313,7 @@ def main():
     choice = st.radio("Choose an option to provide patient data:", ("Upload Excel File", "Enter Data Manually"), key="input_choice")
 
     if choice == "Upload Excel File":
-        df = data_handler.load_data()
+        df = data_handler.load_data(key_suffix="upload_excel")
         if df is None:
             return
         patient_data = df.iloc[0].drop("ALS").values
@@ -329,7 +329,7 @@ def main():
         st.write(f"Probability of ALS: {probability[0]:.2f}")
 
     if choice == "Upload Excel File":
-        df = data_handler.load_data()
+        df = data_handler.load_data(key_suffix="upload_excel_evaluation")
         if df is None:
             return
 
