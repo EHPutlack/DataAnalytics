@@ -165,10 +165,13 @@ class ALSDetectionApp:
 
             performance_metrics.append({
                 "Model": model_name,
-                **{k: v for k, v in metrics.items() if k != 'model' and k != 'confusion_matrix' and k != 'roc_curve' and k != 'precision_recall_curve'}
+                **{k: v for k, v in metrics.items() if k not in ['model', 'confusion_matrix', 'roc_curve', 'precision_recall_curve']}
             })
 
         self.performance_df = pd.DataFrame(performance_metrics)
+        
+        # Debugging step: print the columns of the DataFrame
+        st.write("Columns in performance_df:", self.performance_df.columns.tolist())
 
     @staticmethod
     def calculate_metrics(y_test, y_pred, y_prob):
@@ -305,8 +308,8 @@ class ALSDetectionApp:
 
     def add_performance_comparison_to_pdf(self, pdf, graph_options, temp_images):
         if "Model Performance Comparison" in graph_options:
-            self.plot_and_save_performance_comparison(pdf, "Model Performance Comparison", ["Accuracy", "Precision", "Recall", "F1 Score", "ROC AUC"], "model_performance_comparison.png", temp_images)
-            self.plot_and_save_performance_comparison(pdf, "Additional Model Performance Comparison", ["MCC", "Balanced Accuracy", "Cohen's Kappa", "Brier Score", "Logarithmic Loss", "F2 Score", "Jaccard Index", "Hamming Loss"], "additional_model_performance_comparison.png", temp_images)
+            self.plot_and_save_performance_comparison(pdf, "Model Performance Comparison", ["accuracy", "precision", "recall", "f1", "roc_auc"], "model_performance_comparison.png", temp_images)
+            self.plot_and_save_performance_comparison(pdf, "Additional Model Performance Comparison", ["mcc", "balanced_accuracy", "kappa", "brier", "logloss", "f2", "jaccard", "hamming"], "additional_model_performance_comparison.png", temp_images)
 
     def plot_and_save_performance_comparison(self, pdf, title, metrics, image_name, temp_images):
         fig, ax = plt.subplots(figsize=(8, 6))
@@ -404,23 +407,30 @@ class ALSDetectionApp:
 
     def display_model_information(self):
         st.write("# Model Performance Comparison")
+
+        if 'accuracy' not in self.performance_df.columns:
+            st.write("Error: 'Accuracy' column not found in performance_df.")
+            st.write("Available columns:", self.performance_df.columns.tolist())
+            return
+
         st.dataframe(self.performance_df)
-        best_model = self.performance_df.loc[self.performance_df["Accuracy"].idxmax()]
+
+        best_model = self.performance_df.loc[self.performance_df["accuracy"].idxmax()]
         st.write(f"### Best Model: {best_model['Model']}")
-        st.write(f"Accuracy: {best_model['Accuracy']:.2f}")
-        st.write(f"Precision: {best_model['Precision']:.2f}")
-        st.write(f"Recall: {best_model['Recall']:.2f}")
-        st.write(f"F1 Score: {best_model['F1 Score']:.2f}")
-        st.write(f"ROC AUC: {best_model['ROC AUC']:.2f}")
+        st.write(f"Accuracy: {best_model['accuracy']:.2f}")
+        st.write(f"Precision: {best_model['precision']:.2f}")
+        st.write(f"Recall: {best_model['recall']:.2f}")
+        st.write(f"F1 Score: {best_model['f1']:.2f}")
+        st.write(f"ROC AUC: {best_model['roc_auc']:.2f}")
 
         st.write("### Plotting the Model Performance Comparison")
-        metrics_to_plot = st.multiselect("Select metrics to plot", ["Accuracy", "Precision", "Recall", "F1 Score", "ROC AUC"], default=[])
+        metrics_to_plot = st.multiselect("Select metrics to plot", ["accuracy", "precision", "recall", "f1", "roc_auc"], default=[])
         if metrics_to_plot:
             fig = px.bar(self.performance_df, x="Model", y=metrics_to_plot, barmode="group")
             st.plotly_chart(fig)
 
         st.write("### Additional Model Performance Comparison")
-        additional_metrics_to_plot = st.multiselect("Select additional metrics to plot", ["MCC", "Balanced Accuracy", "Cohen's Kappa", "Brier Score", "Logarithmic Loss", "F2 Score", "Jaccard Index", "Hamming Loss"], default=[])
+        additional_metrics_to_plot = st.multiselect("Select additional metrics to plot", ["mcc", "balanced_accuracy", "kappa", "brier", "logloss", "f2", "jaccard", "hamming"], default=[])
         if additional_metrics_to_plot:
             fig = px.bar(self.performance_df, x="Model", y=additional_metrics_to_plot, barmode="group")
             st.plotly_chart(fig)
