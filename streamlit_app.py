@@ -117,7 +117,7 @@ class DataHandler:
         return df
     
     def load_data(self):
-        uploaded_file = st.file_uploader("Upload an Excel file", type=["xlsx"])
+        uploaded_file = st.file_uploader("Upload an Excel file", type=["xlsx"], key="file_uploader")
         if uploaded_file is not None:
             try:
                 df = pd.read_excel(uploaded_file)
@@ -328,20 +328,15 @@ def main():
         st.write(f"Prediction: {'ALS' if prediction[0] == 1 else 'No ALS'}")
         st.write(f"Probability of ALS: {probability[0]:.2f}")
 
-    # Load and evaluate models only if not predicting
     if choice == "Upload Excel File":
-        # Load data
         df = data_handler.load_data()
         if df is None:
             return
 
-        # Preprocess data
         X_train, X_test, y_train, y_test = model_handler.preprocess_data(df)
 
-        # Evaluate models
         model_performance, performance_df = model_handler.evaluate_models(X_train, X_test, y_train, y_test)
 
-        # Display model performance
         st.write("# Model Performance Comparison")
         st.dataframe(performance_df)
 
