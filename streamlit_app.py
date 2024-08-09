@@ -23,19 +23,7 @@ import os
 
 class ALSDetectionApp:
     def __init__(self):
-        self.general_parameters = self.define_general_parameters()
-        self.als_specific_parameters = self.define_als_specific_parameters()
-        self.parameters = self.general_parameters + self.als_specific_parameters
-        self.models = self.define_models()
-        self.scaler = StandardScaler()
-        self.performance_df = pd.DataFrame()
-        self.model_performance = {}
-        self.load_css("styles.css")
-        self.add_logo("Logo.PNG")
-
-    @staticmethod
-    def define_general_parameters():
-        return [
+        self.general_parameters = [
             'Heart Rate', 'Blood Pressure Systolic', 'Blood Pressure Diastolic',
             'Respiratory Rate', 'Oxygen Saturation', 'Temperature', 'Weight',
             'Height', 'BMI', 'Blood Glucose', 'Cholesterol', 'HDL', 'LDL',
@@ -43,17 +31,14 @@ class ALSDetectionApp:
             'RBC Count', 'Platelet Count', 'Creatinine', 'BUN', 'Sodium',
             'Potassium', 'Calcium', 'Magnesium'
         ]
-
-    @staticmethod
-    def define_als_specific_parameters():
-        return [
+        self.als_specific_parameters = [
             'Muscle Strength', 'Motor Function Score', 'Speech Clarity',
             'Swallowing Function', 'Respiratory Capacity'
         ]
-
-    @staticmethod
-    def define_models():
-        return {
+        self.parameters = self.general_parameters + self.als_specific_parameters
+        self.df = pd.DataFrame()
+        self.performance_df = pd.DataFrame()
+        self.models = {
             "Random Forest": RandomForestClassifier(random_state=0),
             "Logistic Regression": LogisticRegression(random_state=0),
             "Support Vector Machine": SVC(probability=True, random_state=0),
@@ -63,43 +48,10 @@ class ALSDetectionApp:
             "Gradient Boosting": GradientBoostingClassifier(random_state=0),
             "AdaBoost": AdaBoostClassifier(algorithm="SAMME", random_state=0)
         }
+        self.model_performance = {}
+        self.scaler = StandardScaler()
 
-    @staticmethod
-    def load_css(file_name):
-        with open(file_name) as f:
-            st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
-
-    @staticmethod
-    def img_to_base64(file_path):
-        with open(file_path, "rb") as img_file:
-            return base64.b64encode(img_file.read()).decode()
-
-    def add_logo(self, logo_file_path):
-        logo_base64 = self.img_to_base64(logo_file_path)
-        st.markdown(
-            f"""
-            <style>
-            .logo-container {{
-                display: flex;
-                justify-content: flex-start;
-                align-items: center;
-                position: fixed;
-                bottom: 50px;
-                right: 10px;
-            }}
-            .logo-container img {{
-                width: 100px;  /* Adjust the width as needed */
-            }}
-            </style>
-            <div class="logo-container">
-                <img src="data:image/png;base64,{logo_base64}" alt="Logo">
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-    @st.cache_data
-    def create_realistic_data(_self, num_patients=1000):
+    def create_realistic_data(self, num_patients=1000):
         np.random.seed(0)
 
         data = np.column_stack([
@@ -135,9 +87,8 @@ class ALSDetectionApp:
             np.random.normal(30, 10, num_patients),        # Respiratory Capacity
         ])
 
-        half_patients = num_patients // 2
-        labels = np.concatenate([np.ones(half_patients), np.zeros(num_patients - half_patients)])
-        df = pd.DataFrame(data, columns=_self.parameters)
+        labels = np.concatenate([np.ones(num_patients // 2), np.zeros(num_patients // 2)])
+        df = pd.DataFrame(data, columns=self.parameters)
         df['ALS'] = labels
         return df
 
@@ -147,52 +98,69 @@ class ALSDetectionApp:
     def preprocess_data(self):
         X = self.df.drop(columns=['ALS'])
         y = self.df['ALS']
+
         X_scaled = self.scaler.fit_transform(X)
-        X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=0)
-        return X_train, X_test, y_train, y_test
+        return train_test_split(X_scaled, y, test_size=0.2, random_state=0)
 
     def train_models(self, X_train, y_train, X_test, y_test):
-        performance_metrics = []
-
         for model_name, model in self.models.items():
             model.fit(X_train, y_train)
             y_pred = model.predict(X_test)
             y_prob = model.predict_proba(X_test)[:, 1] if hasattr(model, "predict_proba") else [0] * len(y_test)
 
-            metrics = self.calculate_metrics(y_test, y_pred, y_prob)
-            metrics['model'] = model
-            self.model_performance[model_name] = metrics
+            accuracy = accuracy_score(y_test, y_pred)
+            precision = precision_score(y_test, y_pred)
+            recall = recall_score(y_test, y_pred)
+            f1 = f1_score(y_test, y_pred)
+            roc_auc = roc_auc_score(y_test, y_prob)
+            mcc = matthews_corrcoef(y_test, y_pred)
+            balanced_accuracy = balanced_accuracy_score(y_test, y_pred)
+            kappa = cohen_kappa_score(y_test, y_pred)
+            brier = brier_score_loss(y_test, y_prob)
+            logloss = log_loss(y_test, y_prob)
+            f2 = fbeta_score(y_test, y_pred, beta=2)
+            jaccard = jaccard_score(y_test, y_pred)
+            hamming = hamming_loss(y_test, y_pred)
 
-            performance_metrics.append({
+            self.model_performance[model_name] = {
+                "model": model,
+                "accuracy": accuracy,
+                "precision": precision,
+                "recall": recall,
+                "f1": f1,
+                "roc_auc": roc_auc,
+                "mcc": mcc,
+                "balanced_accuracy": balanced_accuracy,
+                "kappa": kappa,
+                "brier": brier,
+                "logloss": logloss,
+                "f2": f2,
+                "jaccard": jaccard,
+                "hamming": hamming,
+                "confusion_matrix": confusion_matrix(y_test, y_pred),
+                "roc_curve": roc_curve(y_test, y_prob),
+                "precision_recall_curve": precision_recall_curve(y_test, y_prob)
+            }
+
+            self.update_performance_df(pd.DataFrame([{
                 "Model": model_name,
-                **{k: v for k, v in metrics.items() if k not in ['model', 'confusion_matrix', 'roc_curve', 'precision_recall_curve']}
-            })
-
-        self.performance_df = pd.DataFrame(performance_metrics)
-
-    @staticmethod
-    def calculate_metrics(y_test, y_pred, y_prob):
-        return {
-            "accuracy": accuracy_score(y_test, y_pred),
-            "precision": precision_score(y_test, y_pred),
-            "recall": recall_score(y_test, y_pred),
-            "f1": f1_score(y_test, y_pred),
-            "roc_auc": roc_auc_score(y_test, y_prob),
-            "mcc": matthews_corrcoef(y_test, y_pred),
-            "balanced_accuracy": balanced_accuracy_score(y_test, y_pred),
-            "kappa": cohen_kappa_score(y_test, y_pred),
-            "brier": brier_score_loss(y_test, y_prob),
-            "logloss": log_loss(y_test, y_prob),
-            "f2": fbeta_score(y_test, y_pred, beta=2),
-            "jaccard": jaccard_score(y_test, y_pred),
-            "hamming": hamming_loss(y_test, y_pred),
-            "confusion_matrix": confusion_matrix(y_test, y_pred),
-            "roc_curve": roc_curve(y_test, y_prob),
-            "precision_recall_curve": precision_recall_curve(y_test, y_prob)
-        }
+                "accuracy": accuracy,
+                "precision": precision,
+                "recall": recall,
+                "f1": f1,
+                "roc_auc": roc_auc,
+                "mcc": mcc,
+                "balanced_accuracy": balanced_accuracy,
+                "kappa": kappa,
+                "brier": brier,
+                "logloss": logloss,
+                "f2": f2,
+                "jaccard": jaccard,
+                "hamming": hamming
+            }]))
 
     def update_performance_df(self, new_data):
-        self.performance_df = self.performance_df.append(new_data, ignore_index=True)
+        self.performance_df = pd.concat([self.performance_df, new_data], ignore_index=True)
 
     def run(self):
         st.sidebar.title("Menu Options")
@@ -208,123 +176,6 @@ class ALSDetectionApp:
             self.display_graphs()
         elif menu_option == "Accessibility Settings":
             self.display_accessibility_settings()
-
-    def save_report_to_pdf(self):
-        graph_options = ["Confusion Matrix", "ROC Curve", "Precision-Recall Curve", "Feature Importance", "Model Performance Comparison"]
-
-        pdf = FPDF()
-        pdf.add_page()
-
-        pdf.set_font("Arial", size=12)
-        pdf.cell(200, 10, txt="ALS Detection Model Report", ln=True, align="C")
-
-        pdf.cell(200, 10, txt="Model Performance Comparison", ln=True, align="L")
-        performance_summary = self.performance_df.to_string(index=False)
-        pdf.multi_cell(0, 10, performance_summary)
-
-        temp_images = []
-
-        for model_name, metrics in self.model_performance.items():
-            if "Confusion Matrix" in graph_options:
-                temp_image_path = self.save_confusion_matrix(metrics, model_name)
-                self.add_image_to_pdf(pdf, temp_image_path, f"Confusion Matrix for {model_name}")
-                temp_images.append(temp_image_path)
-
-            if "ROC Curve" in graph_options:
-                temp_image_path = self.save_roc_curve(metrics, model_name)
-                self.add_image_to_pdf(pdf, temp_image_path, f"ROC Curve for {model_name}")
-                temp_images.append(temp_image_path)
-
-            if "Precision-Recall Curve" in graph_options:
-                temp_image_path = self.save_precision_recall_curve(metrics, model_name)
-                self.add_image_to_pdf(pdf, temp_image_path, f"Precision-Recall Curve for {model_name}")
-                temp_images.append(temp_image_path)
-
-            if "Feature Importance" in graph_options and hasattr(metrics["model"], "feature_importances_"):
-                temp_image_path = self.save_feature_importance(metrics, model_name)
-                self.add_image_to_pdf(pdf, temp_image_path, f"Feature Importance for {model_name}")
-                temp_images.append(temp_image_path)
-
-        self.add_performance_comparison_to_pdf(pdf, graph_options, temp_images)
-
-        pdf_output = BytesIO()
-        pdf_output.write(pdf.output(dest='S').encode('latin1'))
-        pdf_output.seek(0)
-
-        st.sidebar.write("### Report saved successfully!")
-        st.sidebar.download_button(label="Download the report", data=pdf_output, file_name="als_detection_model_report.pdf", mime="application/pdf")
-
-        self.cleanup_temp_images(temp_images)
-
-    def save_confusion_matrix(self, metrics, model_name):
-        fig, ax = plt.subplots(figsize=(8, 6))
-        sns.heatmap(metrics["confusion_matrix"], annot=True, fmt="d", cmap="Blues", ax=ax)
-        ax.set_title(f"Confusion Matrix for {model_name}")
-        temp_image_path = f"{model_name}_confusion_matrix.png"
-        fig.savefig(temp_image_path, bbox_inches='tight')
-        return temp_image_path
-
-    def save_roc_curve(self, metrics, model_name):
-        fig, ax = plt.subplots(figsize=(8, 6))
-        fpr, tpr, _ = metrics["roc_curve"]
-        ax.plot(fpr, tpr, label=f"{model_name} (AUC = {metrics['roc_auc']:.2f})")
-        ax.plot([0, 1], [0, 1], linestyle="--")
-        ax.set_title(f"ROC Curve for {model_name}")
-        ax.set_xlabel("False Positive Rate")
-        ax.set_ylabel("True Positive Rate")
-        ax.legend(loc="lower right")
-        temp_image_path = f"{model_name}_roc_curve.png"
-        fig.savefig(temp_image_path, bbox_inches='tight')
-        return temp_image_path
-
-    def save_precision_recall_curve(self, metrics, model_name):
-        fig, ax = plt.subplots(figsize=(8, 6))
-        precision, recall, _ = metrics["precision_recall_curve"]
-        ax.plot(recall, precision, label=f"{model_name}")
-        ax.set_title(f"Precision-Recall Curve for {model_name}")
-        ax.set_xlabel("Recall")
-        ax.set_ylabel("Precision")
-        ax.legend(loc="lower left")
-        temp_image_path = f"{model_name}_precision_recall_curve.png"
-        fig.savefig(temp_image_path, bbox_inches='tight')
-        return temp_image_path
-
-    def save_feature_importance(self, metrics, model_name):
-        feature_importance = pd.DataFrame({
-            'Feature': self.parameters,
-            'Importance': metrics["model"].feature_importances_
-        }).sort_values(by='Importance', ascending=False)
-        fig, ax = plt.subplots(figsize=(8, 6))
-        sns.barplot(x="Importance", y="Feature", data=feature_importance, ax=ax)
-        ax.set_title(f"Feature Importance for {model_name}")
-        temp_image_path = f"{model_name}_feature_importance.png"
-        fig.savefig(temp_image_path, bbox_inches='tight')
-        return temp_image_path
-
-    def add_image_to_pdf(self, pdf, image_path, title):
-        pdf.add_page()
-        pdf.cell(200, 10, txt=title, ln=True, align="L")
-        pdf.image(image_path, w=180)
-
-    def add_performance_comparison_to_pdf(self, pdf, graph_options, temp_images):
-        if "Model Performance Comparison" in graph_options:
-            self.plot_and_save_performance_comparison(pdf, "Model Performance Comparison", ["accuracy", "precision", "recall", "f1", "roc_auc"], "model_performance_comparison.png", temp_images)
-            self.plot_and_save_performance_comparison(pdf, "Additional Model Performance Comparison", ["mcc", "balanced_accuracy", "kappa", "brier", "logloss", "f2", "jaccard", "hamming"], "additional_model_performance_comparison.png", temp_images)
-
-    def plot_and_save_performance_comparison(self, pdf, title, metrics, image_name, temp_images):
-        fig, ax = plt.subplots(figsize=(8, 6))
-        self.performance_df.plot(kind="bar", x="Model", y=metrics, ax=ax)
-        ax.set_title(title)
-        ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.6), ncol=2)
-        temp_image_path = image_name
-        fig.savefig(temp_image_path, bbox_inches='tight')
-        self.add_image_to_pdf(pdf, temp_image_path, title)
-        temp_images.append(temp_image_path)
-
-    @staticmethod
-    def cleanup_temp_images(temp_images):
-        for temp_image_path in temp_images:
-            os.remove(temp_image_path)
 
     def display_welcome(self):
         st.write("# Welcome to Mitosense's ALS Detection Model!")
@@ -350,7 +201,7 @@ class ALSDetectionApp:
     def display_manual_entry(self):
         st.write("# Enter new patient data")
         uploaded_file = st.file_uploader("Upload CSV for one patient", type="csv")
-
+        patient_df = None
         if uploaded_file is not None:
             patient_df = pd.read_csv(uploaded_file)
             if set(self.parameters).issubset(patient_df.columns):
@@ -358,8 +209,11 @@ class ALSDetectionApp:
                     st.session_state[param] = float(patient_df[param].values[0])
             else:
                 st.write("Error: The uploaded CSV file does not contain the required columns.")
-        
-        new_data = [st.number_input(f"{param}", min_value=0.0, max_value=1000000000.0, value=st.session_state.get(param, 50.0)) for param in self.parameters]
+
+        new_data = []
+        for param in self.parameters:
+            value = st.number_input(f"{param}", min_value=0.0, max_value=1000000000.0, value=st.session_state.get(param, 50.0))
+            new_data.append(value)
 
         if uploaded_file is not None and patient_df is not None:
             st.write("### Uploaded Patient Data")
@@ -371,7 +225,10 @@ class ALSDetectionApp:
             model_choice = st.sidebar.selectbox("Choose a model", list(self.models.keys()))
             model = self.models[model_choice]
             prediction = model.predict(new_data_scaled)[0]
-            st.write("The patient is predicted to have ALS." if prediction == 1 else "The patient is predicted not to have ALS.")
+            if prediction == 1:
+                st.write("The patient is predicted to have ALS.")
+            else:
+                st.write("The patient is predicted not to have ALS.")
 
     def display_csv_upload(self):
         st.write("# Choose a CSV file")
@@ -515,8 +372,7 @@ class ALSDetectionApp:
         elif language == "French":
             st.write("Langue sélectionnée: Français")
 
-    @staticmethod
-    def display_metric_descriptions():
+    def display_metric_descriptions(self):
         st.write("## Metric Descriptions")
 
         st.write("### Accuracy")
@@ -526,7 +382,7 @@ class ALSDetectionApp:
         st.write("Precision is the ratio of correctly predicted positive observations to the total predicted positives.")
 
         st.write("### Recall")
-        st.write("Recall is the ratio of correctly predicted positive observations to all observations in actual class.")
+        st.write("Recall is the ratio of correctly predicted positive observations to the all observations in actual class.")
 
         st.write("### F1 Score")
         st.write("The F1 Score is the weighted average of Precision and Recall.")
@@ -558,8 +414,7 @@ class ALSDetectionApp:
         st.write("### Hamming Loss")
         st.write("The Hamming Loss is the fraction of labels that are incorrectly predicted.")
 
-    @staticmethod
-    def display_graph_descriptions():
+    def display_graph_descriptions(self):
         st.write("## Graph Descriptions")
 
         st.write("### Confusion Matrix")
@@ -574,8 +429,43 @@ class ALSDetectionApp:
         st.write("### Feature Importance")
         st.write("Feature Importance indicates the contribution of each feature to the prediction made by the model. It helps in understanding which features are most influential in the model's decision-making process. This graph is typically available for tree-based models like Random Forest and Gradient Boosting.")
 
+    # CSS and logo for styling
+    def local_css(self, file_name):
+        with open(file_name) as f:
+            st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
+
+    def img_to_base64(self, file_path):
+        with open(file_path, "rb") as img_file:
+            return base64.b64encode(img_file.read()).decode()
+
+    def apply_custom_styling(self):
+        self.local_css("styles.css")
+        logo_base64 = self.img_to_base64("Logo.PNG")
+        st.markdown(
+            f"""
+            <style>
+            .logo-container {{
+                display: flex;
+                justify-content: flex-start;
+                align-items: center;
+                position: fixed;
+                bottom: 50px;
+                right: 10px;
+            }}
+            .logo-container img {{
+                width: 100px;
+            }}
+            </style>
+            <div class="logo-container">
+                <img src="data:image/png;base64,{logo_base64}" alt="Logo">
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
 if __name__ == "__main__":
     app = ALSDetectionApp()
+    app.apply_custom_styling()
     app.load_data()
     X_train, X_test, y_train, y_test = app.preprocess_data()
     app.train_models(X_train, y_train, X_test, y_test)
