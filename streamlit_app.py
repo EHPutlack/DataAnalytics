@@ -21,7 +21,6 @@ from io import BytesIO
 import base64
 import os
 
-# Define the main application class
 class ALSDetectionApp:
     def __init__(self):
         self.general_parameters = self.define_general_parameters()
@@ -31,8 +30,8 @@ class ALSDetectionApp:
         self.scaler = StandardScaler()
         self.performance_df = pd.DataFrame()
         self.model_performance = {}
-        self.load_css("styles.css")  # Load CSS on initialization
-        self.add_logo("Logo.PNG")  # Add logo on initialization
+        self.load_css("styles.css")
+        self.add_logo("Logo.PNG")
 
     @staticmethod
     def define_general_parameters():
@@ -100,7 +99,7 @@ class ALSDetectionApp:
         )
 
     @st.cache_data
-    def create_realistic_data(self, num_patients=1000):
+    def create_realistic_data(_self, num_patients=1000):
         np.random.seed(0)
 
         data = np.column_stack([
@@ -138,7 +137,7 @@ class ALSDetectionApp:
 
         half_patients = num_patients // 2
         labels = np.concatenate([np.ones(half_patients), np.zeros(num_patients - half_patients)])
-        df = pd.DataFrame(data, columns=self.parameters)
+        df = pd.DataFrame(data, columns=_self.parameters)
         df['ALS'] = labels
         return df
 
@@ -191,6 +190,21 @@ class ALSDetectionApp:
             "roc_curve": roc_curve(y_test, y_prob),
             "precision_recall_curve": precision_recall_curve(y_test, y_prob)
         }
+
+    def run(self):
+        st.sidebar.title("Menu Options")
+        menu_option = st.sidebar.radio("Choose an option", ["Welcome", "Data Input", "Model Information", "Graphs", "Accessibility Settings"])
+
+        if menu_option == "Welcome":
+            self.display_welcome()
+        elif menu_option == "Data Input":
+            self.display_data_input()
+        elif menu_option == "Model Information":
+            self.display_model_information()
+        elif menu_option == "Graphs":
+            self.display_graphs()
+        elif menu_option == "Accessibility Settings":
+            self.display_accessibility_settings()
 
     def save_report_to_pdf(self):
         graph_options = ["Confusion Matrix", "ROC Curve", "Precision-Recall Curve", "Feature Importance", "Model Performance Comparison"]
@@ -309,22 +323,6 @@ class ALSDetectionApp:
         for temp_image_path in temp_images:
             os.remove(temp_image_path)
 
-    def run(self):
-        # Sidebar menu
-        st.sidebar.title("Menu Options")
-        menu_option = st.sidebar.radio("Choose an option", ["Welcome", "Data Input", "Model Information", "Graphs", "Accessibility Settings"])
-
-        if menu_option == "Welcome":
-            self.display_welcome()
-        elif menu_option == "Data Input":
-            self.display_data_input()
-        elif menu_option == "Model Information":
-            self.display_model_information()
-        elif menu_option == "Graphs":
-            self.display_graphs()
-        elif menu_option == "Accessibility Settings":
-            self.display_accessibility_settings()
-
     def display_welcome(self):
         st.write("# Welcome to Mitosense's ALS Detection Model!")
         st.markdown("""
@@ -390,12 +388,12 @@ class ALSDetectionApp:
     def display_example_data(self):
         st.write("# View Example Patients")
         num_example_patients = st.number_input("Enter the number of example patients to view:", min_value=1, max_value=100, value=10, step=1)
-    
+
         if st.button("Generate Example Data"):
             num_example_patients = int(num_example_patients)
             example_data = self.create_realistic_data(num_patients=num_example_patients)
             st.dataframe(example_data)
-            
+
             st.write("## Predictions for example data")
             example_data_scaled = self.scaler.transform(example_data[self.parameters])
             model_choice = st.sidebar.selectbox("Choose a model", list(self.models.keys()))
@@ -505,7 +503,7 @@ class ALSDetectionApp:
         language = st.sidebar.radio("Select Language", ["English", "Spanish", "French"])
         if language == "Spanish":
             st.write("Idioma seleccionado: Español")
-        elif language is "French":
+        elif language == "French":
             st.write("Langue sélectionnée: Français")
 
     @staticmethod
@@ -567,7 +565,6 @@ class ALSDetectionApp:
         st.write("### Feature Importance")
         st.write("Feature Importance indicates the contribution of each feature to the prediction made by the model. It helps in understanding which features are most influential in the model's decision-making process. This graph is typically available for tree-based models like Random Forest and Gradient Boosting.")
 
-# Create an instance of the ALSDetectionApp class and run the app
 if __name__ == "__main__":
     app = ALSDetectionApp()
     app.load_data()
