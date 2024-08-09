@@ -56,8 +56,8 @@ def display_logo():
 class DataHandler:
     def __init__(self):
         self.parameters = self.define_parameters()
-        self.scaler = StandardScaler()
-    
+        self.scaler = None  # We'll initialize the scaler in a method
+
     def define_parameters(self):
         general_parameters = [
             'Heart Rate', 'Blood Pressure Systolic', 'Blood Pressure Diastolic',
@@ -114,6 +114,10 @@ class DataHandler:
         labels = np.concatenate([np.ones(half_patients), np.zeros(num_patients - half_patients)])
         df = pd.DataFrame(data, columns=self.parameters)
         df['ALS'] = labels
+
+        # Fit the scaler here
+        self.scaler = StandardScaler().fit(df.drop(columns=['ALS']))
+        
         return df
     
     def load_data(self, key_suffix=""):
@@ -121,12 +125,15 @@ class DataHandler:
         if uploaded_file is not None:
             try:
                 df = pd.read_excel(uploaded_file)
+                if self.scaler is None:
+                    self.scaler = StandardScaler().fit(df.drop(columns=['ALS']))  # Fit the scaler if not done yet
             except ImportError:
                 st.error("Missing optional dependency 'openpyxl'. Use pip or conda to install openpyxl.")
                 return None
         else:
             df = self.create_realistic_data()
         return df
+
 
 class ModelHandler:
     def __init__(self, data_handler):
