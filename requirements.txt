@@ -1,7 +1,11 @@
 altair
 pandas
 streamlit
+streamlit-extras
 scikit-learn
 matplotlib
 seaborn
 fpdf
+plotly
+openpyxl
+kaleido
