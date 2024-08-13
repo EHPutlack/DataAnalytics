@@ -4,7 +4,7 @@
 }
 
 /* Custom styles for sidebar */
-.stSidebar {  /* Targeting the main sidebar container */
+.css-eczjsme11 {  /* Targeting the main sidebar container */
     background-color: #333; /* Dark background */
     color: #ffffff; /* White text */
 }
@@ -12,6 +12,10 @@
 .stButton button {
     background-color: #F3A122;
     color: #fff;
+}
+
+.stButton button:hover {
+    background-color: #fff; /* Darker green on hover */
 }
 
 .stAlert {
@@ -28,10 +32,10 @@
 
 /* Styles for titles */
 .stMarkdown h1 {
-    color: #fff; /* Dark text color */
+    color: #F3A122; 
 }
 
 /* Styles for subtitles */
 .stMarkdown h2 {
-    color: #fff; /* Slightly lighter text color */
+    color: #F3A122; 
 }
