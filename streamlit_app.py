@@ -275,7 +275,6 @@ class ALSDetectionApp:
         num_example_patients = st.number_input("Enter the number of example patients to view:", min_value=1, max_value=100, value=10, step=1)
         if st.button("Generate Example Data"):
             example_data = ALSDetectionApp.create_realistic_data(self.parameters, num_patients=int(num_example_patients))
-            st.dataframe(example_data)
             example_data_scaled = self.scaler.transform(example_data[self.parameters])
             model_choice = st.sidebar.selectbox("Choose a model", list(self.models.keys()))
             model = self.models[model_choice]
