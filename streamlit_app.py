@@ -195,16 +195,19 @@ class ALSDetectionApp:
         self.performance_df = pd.DataFrame(performance_metrics)
 
     def update_performance_df(self, new_data):
+        # Assuming new_data is a DataFrame with the same structure as self.performance_df
         self.performance_df = pd.concat([self.performance_df, new_data], ignore_index=True)
 
     def save_report_to_pdf(self):
-        graph_options = ["Confusion Matrix", "ROC Curve", "Precision-Recall Curve", "Feature Importance"]
+        graph_options = ["Confusion Matrix", "ROC Curve", "Precision-Recall Curve", "Feature Importance", "Model Performance Comparison"]
 
         pdf = FPDF()
         pdf.add_page()
 
         pdf.set_font("Arial", size=12)
-        pdf.cell(200, 10, txt="ALS Detection Model Report - Graphs Only", ln=True, align="C")
+        pdf.cell(200, 10, txt="ALS Detection Model Report", ln=True, align="C")
+
+        pdf.cell(200, 10, txt="Model Performance Comparison", ln=True, align="L")
 
         temp_images = []
 
@@ -266,12 +269,25 @@ class ALSDetectionApp:
                 pdf.image(temp_image_path, w=180)  # Adjust width as needed
                 temp_images.append(temp_image_path)
 
+        # Include the bar graphs for Model Performance Comparison
+        try:
+            fig = px.bar(self.performance_df, x="Model", y=["accuracy", "precision", "recall", "f1", "roc_auc"], barmode="group")
+            temp_image_path = "model_performance_comparison.png"
+            fig.write_image(temp_image_path)
+            pdf.add_page()
+            pdf.cell(200, 10, txt="Model Performance Comparison (Bar Graphs)", ln=True, align="L")
+            pdf.image(temp_image_path, w=180)  # Adjust width as needed
+            temp_images.append(temp_image_path)
+        except ValueError as e:
+            st.error(f"Error generating bar graph image: {e}")
+            st.write("Please ensure that the 'kaleido' package is installed by running `pip install -U kaleido`.")
+
         pdf_output = BytesIO()
         pdf_output.write(pdf.output(dest='S').encode('latin1'))
         pdf_output.seek(0)
 
         st.sidebar.write("### Report saved successfully!")
-        st.sidebar.download_button(label="Download the report", data=pdf_output, file_name="als_detection_model_graphs_report.pdf", mime="application/pdf")
+        st.sidebar.download_button(label="Download the report", data=pdf_output, file_name="als_detection_model_report.pdf", mime="application/pdf")
 
         for temp_image_path in temp_images:
             os.remove(temp_image_path)
