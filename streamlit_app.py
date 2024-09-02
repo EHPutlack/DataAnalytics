@@ -207,8 +207,6 @@ class ALSDetectionApp:
         pdf.set_font("Arial", size=12)
         pdf.cell(200, 10, txt="ALS Detection Model Report", ln=True, align="C")
 
-        pdf.cell(200, 10, txt="Model Performance Comparison", ln=True, align="L")
-
         temp_images = []
 
         for model_name, metrics in self.model_performance.items():
@@ -271,12 +269,22 @@ class ALSDetectionApp:
 
         # Include the bar graphs for Model Performance Comparison
         try:
-            fig = px.bar(self.performance_df, x="Model", y=["accuracy", "precision", "recall", "f1", "roc_auc"], barmode="group")
+            #fig = px.bar(self.performance_df, x="Model", y=["accuracy", "precision", "recall", "f1", "roc_auc"], barmode="group")
+            #temp_image_path = "model_performance_comparison.png"
+            #fig.write_image(temp_image_path)
+            #pdf.add_page()
+            #pdf.cell(200, 10, txt="Model Performance Comparison (Bar Graphs)", ln=True, align="L")
+            #pdf.image(temp_image_path, w=180)  # Adjust width as needed
+            #temp_images.append(temp_image_path)
+
+            fig, ax = plt.subplots()
+            performance_df.plot(kind="bar", x="Model", y=["Accuracy", "Precision", "Recall", "F1 Score", "ROC AUC"], ax=ax)
+            ax.set_title("Model Performance Comparison")
             temp_image_path = "model_performance_comparison.png"
-            fig.write_image(temp_image_path)
+            fig.savefig(temp_image_path)
             pdf.add_page()
-            pdf.cell(200, 10, txt="Model Performance Comparison (Bar Graphs)", ln=True, align="L")
-            pdf.image(temp_image_path, w=180)  # Adjust width as needed
+            pdf.chapter_title("Model Performance Comparison")
+            pdf.add_image(temp_image_path)
             temp_images.append(temp_image_path)
         except ValueError as e:
             st.error(f"Error generating bar graph image: {e}")
