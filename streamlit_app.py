@@ -199,142 +199,160 @@ class ALSDetectionApp:
         self.performance_df = pd.concat([self.performance_df, new_data], ignore_index=True)
 
     def save_report_to_pdf(self):
-        graph_options = ["Confusion Matrix", "ROC Curve", "Precision-Recall Curve", "Feature Importance"]
-
-        pdf = FPDF()
-        pdf.add_page()
-
-        pdf.set_font("Arial", size=12)
-        pdf.cell(200, 10, txt="ALS Detection Model Report - Graphs Only", ln=True, align="C")
-
-        temp_images = []
-
-        for model_name, metrics in self.model_performance.items():
-            if "Confusion Matrix" in graph_options:
-                fig, ax = plt.subplots(figsize=(8, 6))  # Adjust figure size as needed
-                sns.heatmap(metrics["confusion_matrix"], annot=True, fmt="d", cmap="Blues", ax=ax)
-                ax.set_title(f"Confusion Matrix for {model_name}")
-                temp_image_path = f"{model_name}_confusion_matrix.png"
-                fig.savefig(temp_image_path, bbox_inches='tight')
-                pdf.add_page()
-                pdf.cell(200, 10, txt=f"Confusion Matrix for {model_name}", ln=True, align="L")
-                pdf.image(temp_image_path, w=180)  # Adjust width as needed
-                temp_images.append(temp_image_path)
-
-            if "ROC Curve" in graph_options:
-                fig, ax = plt.subplots(figsize=(8, 6))  # Adjust figure size as needed
-                fpr, tpr, _ = metrics["roc_curve"]
-                ax.plot(fpr, tpr, label=f"{model_name} (AUC = {metrics['roc_auc']:.2f})")
-                ax.plot([0, 1], [0, 1], linestyle="--")
-                ax.set_title(f"ROC Curve for {model_name}")
-                ax.set_xlabel("False Positive Rate")
-                ax.set_ylabel("True Positive Rate")
-                ax.legend(loc="lower right")
-                temp_image_path = f"{model_name}_roc_curve.png"
-                fig.savefig(temp_image_path, bbox_inches='tight')
-                pdf.add_page()
-                pdf.cell(200, 10, txt=f"ROC Curve for {model_name}", ln=True, align="L")
-                pdf.image(temp_image_path, w=180)  # Adjust width as needed
-                temp_images.append(temp_image_path)
-
-            if "Precision-Recall Curve" in graph_options:
-                fig, ax = plt.subplots(figsize=(8, 6))  # Adjust figure size as needed
-                precision, recall, _ = metrics["precision_recall_curve"]
-                ax.plot(recall, precision, label=f"{model_name}")
-                ax.set_title(f"Precision-Recall Curve for {model_name}")
-                ax.set_xlabel("Recall")
-                ax.set_ylabel("Precision")
-                ax.legend(loc="lower left")
-                temp_image_path = f"{model_name}_precision_recall_curve.png"
-                fig.savefig(temp_image_path, bbox_inches='tight')
-                pdf.add_page()
-                pdf.cell(200, 10, txt=f"Precision-Recall Curve for {model_name}", ln=True, align="L")
-                pdf.image(temp_image_path, w=180)  # Adjust width as needed
-                temp_images.append(temp_image_path)
-
-            if "Feature Importance" in graph_options and hasattr(metrics["model"], "feature_importances_"):
-                feature_importance = pd.DataFrame({
-                    'Feature': self.parameters,
-                    'Importance': metrics["model"].feature_importances_
-                }).sort_values(by='Importance', ascending=False)
-                fig, ax = plt.subplots(figsize=(8, 6))  # Adjust figure size as needed
-                sns.barplot(x="Importance", y="Feature", data=feature_importance, ax=ax)
-                ax.set_title(f"Feature Importance for {model_name}")
-                temp_image_path = f"{model_name}_feature_importance.png"
-                fig.savefig(temp_image_path, bbox_inches='tight')
-                pdf.add_page()
-                pdf.cell(200, 10, txt=f"Feature Importance for {model_name}", ln=True, align="L")
-                pdf.image(temp_image_path, w=180)  # Adjust width as needed
-                temp_images.append(temp_image_path)
-
-        # Include the bar graph for Model Performance Comparison with selected metrics (accuracy, precision, recall, f1, roc_auc)
-        try:
-            selected_metrics = ["accuracy", "precision", "recall", "f1", "roc_auc"]
-            fig, ax = plt.subplots(figsize=(8, 6))
-            self.performance_df[selected_metrics].plot(kind='bar', ax=ax, color=mcolors.TABLEAU_COLORS.values(), edgecolor='black')
-            ax.set_title("Model Performance Comparison (Selected Metrics)")
-            ax.set_xlabel("Model")
-            ax.set_ylabel("Scores")
-            ax.legend(loc="best", bbox_to_anchor=(1, 1))
-            temp_image_path = "model_performance_comparison_selected_metrics.png"
-            fig.savefig(temp_image_path, bbox_inches='tight')
-            pdf.add_page()
-            pdf.cell(200, 10, txt="Model Performance Comparison (Selected Metrics)", ln=True, align="L")
-            pdf.image(temp_image_path, w=180)  # Adjust width as needed
-            temp_images.append(temp_image_path)
-        except ValueError as e:
-            st.error(f"Error generating bar graph image: {e}")
-            st.write("Please ensure that the 'kaleido' package is installed by running `pip install -U kaleido`.")
-
-        # Include the bar graphs for Model Performance Comparison excluding 'logloss'
-        try:
-            metrics_to_exclude = ['logloss']
-            filtered_metrics = self.performance_df.drop(columns=metrics_to_exclude)
-            fig, ax = plt.subplots(figsize=(8, 6))
-            filtered_metrics.plot(kind='bar', ax=ax, color=mcolors.TABLEAU_COLORS.values(), edgecolor='black')
-            ax.set_title("Model Performance Comparison (Excluding Logloss)")
-            ax.set_xlabel("Model")
-            ax.set_ylabel("Scores")
-            ax.legend(loc="best", bbox_to_anchor=(1, 1))
-            temp_image_path = "model_performance_comparison_excluding_logloss.png"
-            fig.savefig(temp_image_path, bbox_inches='tight')
-            pdf.add_page()
-            pdf.cell(200, 10, txt="Model Performance Comparison (Excluding Logloss)", ln=True, align="L")
-            pdf.image(temp_image_path, w=180)  # Adjust width as needed
-            temp_images.append(temp_image_path)
-        except ValueError as e:
-            st.error(f"Error generating bar graph image: {e}")
-            st.write("Please ensure that the 'kaleido' package is installed by running `pip install -U kaleido`.")
-
-        # Include the bar graph for all remaining metrics except accuracy, precision, recall, f1, roc_auc, and logloss
-        try:
-            remaining_metrics = ['mcc', 'balanced_accuracy', 'kappa', 'brier', 'f2', 'jaccard', 'hamming']
-            filtered_remaining_metrics = self.performance_df[remaining_metrics]
-            fig, ax = plt.subplots(figsize=(8, 6))
-            filtered_remaining_metrics.plot(kind='bar', ax=ax, color=mcolors.TABLEAU_COLORS.values(), edgecolor='black')
-            ax.set_title("Model Performance Comparison (Remaining Metrics)")
-            ax.set_xlabel("Model")
-            ax.set_ylabel("Scores")
-            ax.legend(loc="best", bbox_to_anchor=(1, 1))
-            temp_image_path = "model_performance_comparison_remaining_metrics.png"
-            fig.savefig(temp_image_path, bbox_inches='tight')
-            pdf.add_page()
-            pdf.cell(200, 10, txt="Model Performance Comparison (Remaining Metrics)", ln=True, align="L")
-            pdf.image(temp_image_path, w=180)  # Adjust width as needed
-            temp_images.append(temp_image_path)
-        except ValueError as e:
-            st.error(f"Error generating bar graph image: {e}")
-            st.write("Please ensure that the 'kaleido' package is installed by running `pip install -U kaleido`.")
-
-        pdf_output = BytesIO()
-        pdf_output.write(pdf.output(dest='S').encode('latin1'))
-        pdf_output.seek(0)
-
-        st.sidebar.write("### Report saved successfully!")
-        st.sidebar.download_button(label="Download the report", data=pdf_output, file_name="als_detection_model_graphs_report.pdf", mime="application/pdf")
-
-        for temp_image_path in temp_images:
-            os.remove(temp_image_path)
+      graph_options = ["Confusion Matrix", "ROC Curve", "Precision-Recall Curve", "Feature Importance"]
+  
+      pdf = FPDF()
+      pdf.add_page()
+  
+      pdf.set_font("Arial", size=12)
+      pdf.cell(200, 10, txt="ALS Detection Model Report - Graphs Only", ln=True, align="C")
+  
+      temp_images = []
+  
+      for model_name, metrics in self.model_performance.items():
+          if "Confusion Matrix" in graph_options:
+              fig, ax = plt.subplots(figsize=(8, 6))  # Adjust figure size as needed
+              sns.heatmap(metrics["confusion_matrix"], annot=True, fmt="d", cmap="Blues", ax=ax)
+              ax.set_title(f"Confusion Matrix for {model_name}")
+              temp_image_path = f"{model_name}_confusion_matrix.png"
+              fig.savefig(temp_image_path, bbox_inches='tight')
+              pdf.add_page()
+              pdf.cell(200, 10, txt=f"Confusion Matrix for {model_name}", ln=True, align="L")
+              pdf.image(temp_image_path, w=180)  # Adjust width as needed
+              temp_images.append(temp_image_path)
+  
+          if "ROC Curve" in graph_options:
+              fig, ax = plt.subplots(figsize=(8, 6))  # Adjust figure size as needed
+              fpr, tpr, _ = metrics["roc_curve"]
+              ax.plot(fpr, tpr, label=f"{model_name} (AUC = {metrics['roc_auc']:.2f})")
+              ax.plot([0, 1], [0, 1], linestyle="--")
+              ax.set_title(f"ROC Curve for {model_name}")
+              ax.set_xlabel("False Positive Rate")
+              ax.set_ylabel("True Positive Rate")
+              ax.legend(loc="lower right")
+              temp_image_path = f"{model_name}_roc_curve.png"
+              fig.savefig(temp_image_path, bbox_inches='tight')
+              pdf.add_page()
+              pdf.cell(200, 10, txt=f"ROC Curve for {model_name}", ln=True, align="L")
+              pdf.image(temp_image_path, w=180)  # Adjust width as needed
+              temp_images.append(temp_image_path)
+  
+          if "Precision-Recall Curve" in graph_options:
+              fig, ax = plt.subplots(figsize=(8, 6))  # Adjust figure size as needed
+              precision, recall, _ = metrics["precision_recall_curve"]
+              ax.plot(recall, precision, label=f"{model_name}")
+              ax.set_title(f"Precision-Recall Curve for {model_name}")
+              ax.set_xlabel("Recall")
+              ax.set_ylabel("Precision")
+              ax.legend(loc="lower left")
+              temp_image_path = f"{model_name}_precision_recall_curve.png"
+              fig.savefig(temp_image_path, bbox_inches='tight')
+              pdf.add_page()
+              pdf.cell(200, 10, txt=f"Precision-Recall Curve for {model_name}", ln=True, align="L")
+              pdf.image(temp_image_path, w=180)  # Adjust width as needed
+              temp_images.append(temp_image_path)
+  
+          if "Feature Importance" in graph_options and hasattr(metrics["model"], "feature_importances_"):
+              feature_importance = pd.DataFrame({
+                  'Feature': self.parameters,
+                  'Importance': metrics["model"].feature_importances_
+              }).sort_values(by='Importance', ascending=False)
+              fig, ax = plt.subplots(figsize=(8, 6))  # Adjust figure size as needed
+              sns.barplot(x="Importance", y="Feature", data=feature_importance, ax=ax)
+              ax.set_title(f"Feature Importance for {model_name}")
+              temp_image_path = f"{model_name}_feature_importance.png"
+              fig.savefig(temp_image_path, bbox_inches='tight')
+              pdf.add_page()
+              pdf.cell(200, 10, txt=f"Feature Importance for {model_name}", ln=True, align="L")
+              pdf.image(temp_image_path, w=180)  # Adjust width as needed
+              temp_images.append(temp_image_path)
+  
+      # Include the bar graph for Model Performance Comparison with selected metrics (accuracy, precision, recall, f1, roc_auc)
+      try:
+          selected_metrics = ["accuracy", "precision", "recall", "f1", "roc_auc"]
+          fig, ax = plt.subplots(figsize=(8, 6))
+          self.performance_df[selected_metrics].plot(kind='bar', ax=ax, color=mcolors.TABLEAU_COLORS.values(), edgecolor='black')
+          ax.set_title("Model Performance Comparison (Selected Metrics)")
+          ax.set_xlabel("Model")
+          ax.set_ylabel("Scores")
+          ax.legend(loc="best", bbox_to_anchor=(1, 1))
+          temp_image_path = "model_performance_comparison_selected_metrics.png"
+          fig.savefig(temp_image_path, bbox_inches='tight')
+          pdf.add_page()
+          pdf.cell(200, 10, txt="Model Performance Comparison (Selected Metrics)", ln=True, align="L")
+          pdf.image(temp_image_path, w=180)  # Adjust width as needed
+          temp_images.append(temp_image_path)
+      except ValueError as e:
+          st.error(f"Error generating bar graph image: {e}")
+          st.write("Please ensure that the 'kaleido' package is installed by running `pip install -U kaleido`.")
+  
+      # Include the bar graphs for Model Performance Comparison excluding 'logloss'
+      try:
+          metrics_to_exclude = ['logloss']
+          filtered_metrics = self.performance_df.drop(columns=metrics_to_exclude)
+          fig, ax = plt.subplots(figsize=(8, 6))
+          filtered_metrics.plot(kind='bar', ax=ax, color=mcolors.TABLEAU_COLORS.values(), edgecolor='black')
+          ax.set_title("Model Performance Comparison (Excluding Logloss)")
+          ax.set_xlabel("Model")
+          ax.set_ylabel("Scores")
+          ax.legend(loc="best", bbox_to_anchor=(1, 1))
+          temp_image_path = "model_performance_comparison_excluding_logloss.png"
+          fig.savefig(temp_image_path, bbox_inches='tight')
+          pdf.add_page()
+          pdf.cell(200, 10, txt="Model Performance Comparison (Excluding Logloss)", ln=True, align="L")
+          pdf.image(temp_image_path, w=180)  # Adjust width as needed
+          temp_images.append(temp_image_path)
+      except ValueError as e:
+          st.error(f"Error generating bar graph image: {e}")
+          st.write("Please ensure that the 'kaleido' package is installed by running `pip install -U kaleido`.")
+  
+      # Include the bar graph for all remaining metrics except accuracy, precision, recall, f1, roc_auc, and logloss
+      try:
+          remaining_metrics = ['mcc', 'balanced_accuracy', 'kappa', 'brier', 'f2', 'jaccard', 'hamming']
+          filtered_remaining_metrics = self.performance_df[remaining_metrics]
+          fig, ax = plt.subplots(figsize=(8, 6))
+          filtered_remaining_metrics.plot(kind='bar', ax=ax, color=mcolors.TABLEAU_COLORS.values(), edgecolor='black')
+          ax.set_title("Model Performance Comparison (Remaining Metrics)")
+          ax.set_xlabel("Model")
+          ax.set_ylabel("Scores")
+          ax.legend(loc="best", bbox_to_anchor=(1, 1))
+          temp_image_path = "model_performance_comparison_remaining_metrics.png"
+          fig.savefig(temp_image_path, bbox_inches='tight')
+          pdf.add_page()
+          pdf.cell(200, 10, txt="Model Performance Comparison (Remaining Metrics)", ln=True, align="L")
+          pdf.image(temp_image_path, w=180)  # Adjust width as needed
+          temp_images.append(temp_image_path)
+      except ValueError as e:
+          st.error(f"Error generating bar graph image: {e}")
+          st.write("Please ensure that the 'kaleido' package is installed by running `pip install -U kaleido`.")
+  
+      # Include the bar graph for the logloss metric only
+      try:
+          fig, ax = plt.subplots(figsize=(8, 6))
+          self.performance_df[['logloss']].plot(kind='bar', ax=ax, color=mcolors.TABLEAU_COLORS.values(), edgecolor='black')
+          ax.set_title("Model Performance Comparison (Logloss Only)")
+          ax.set_xlabel("Model")
+          ax.set_ylabel("Logloss")
+          ax.legend(loc="best", bbox_to_anchor=(1, 1))
+          temp_image_path = "model_performance_comparison_logloss.png"
+          fig.savefig(temp_image_path, bbox_inches='tight')
+          pdf.add_page()
+          pdf.cell(200, 10, txt="Model Performance Comparison (Logloss Only)", ln=True, align="L")
+          pdf.image(temp_image_path, w=180)  # Adjust width as needed
+          temp_images.append(temp_image_path)
+      except ValueError as e:
+          st.error(f"Error generating bar graph image: {e}")
+          st.write("Please ensure that the 'kaleido' package is installed by running `pip install -U kaleido`.")
+  
+      pdf_output = BytesIO()
+      pdf_output.write(pdf.output(dest='S').encode('latin1'))
+      pdf_output.seek(0)
+  
+      st.sidebar.write("### Report saved successfully!")
+      st.sidebar.download_button(label="Download the report", data=pdf_output, file_name="als_detection_model_graphs_report.pdf", mime="application/pdf")
+  
+      for temp_image_path in temp_images:
+          os.remove(temp_image_path)
 
     def run(self):
         st.sidebar.title("Menu Options")
