@@ -20,6 +20,7 @@ from fpdf import FPDF
 from io import BytesIO
 import base64
 import os
+import matplotlib.colors as mcolors
 
 # Load CSS file
 def local_css(file_name):
@@ -195,17 +196,16 @@ class ALSDetectionApp:
         self.performance_df = pd.DataFrame(performance_metrics)
 
     def update_performance_df(self, new_data):
-        # Assuming new_data is a DataFrame with the same structure as self.performance_df
         self.performance_df = pd.concat([self.performance_df, new_data], ignore_index=True)
 
     def save_report_to_pdf(self):
-        graph_options = ["Confusion Matrix", "ROC Curve", "Precision-Recall Curve", "Feature Importance", "Model Performance Comparison"]
+        graph_options = ["Confusion Matrix", "ROC Curve", "Precision-Recall Curve", "Feature Importance"]
 
         pdf = FPDF()
         pdf.add_page()
 
         pdf.set_font("Arial", size=12)
-        pdf.cell(200, 10, txt="ALS Detection Model Report", ln=True, align="C")
+        pdf.cell(200, 10, txt="ALS Detection Model Report - Graphs Only", ln=True, align="C")
 
         temp_images = []
 
@@ -267,13 +267,19 @@ class ALSDetectionApp:
                 pdf.image(temp_image_path, w=180)  # Adjust width as needed
                 temp_images.append(temp_image_path)
 
-        # Include the bar graphs for Model Performance Comparison
+        # Include the bar graphs for Model Performance Comparison with consistent colors
         try:
-            fig = px.bar(self.performance_df, x="Model", y=["accuracy", "precision", "recall", "f1", "roc_auc"], barmode="group")
+            color_palette = list(mcolors.TABLEAU_COLORS.values())  # Using Tableau colors for consistency
+            fig, ax = plt.subplots(figsize=(8, 6))
+            self.performance_df.plot(kind='bar', ax=ax, color=color_palette, edgecolor='black')
+            ax.set_title("Model Performance Comparison")
+            ax.set_xlabel("Model")
+            ax.set_ylabel("Scores")
+            ax.legend(loc="best", bbox_to_anchor=(1, 1))
             temp_image_path = "model_performance_comparison.png"
-            fig.write_image(temp_image_path)
+            fig.savefig(temp_image_path, bbox_inches='tight')
             pdf.add_page()
-            pdf.cell(200, 10, txt="Model Performance Comparison (Bar Graphs)", ln=True, align="L")
+            pdf.cell(200, 10, txt="Model Performance Comparison", ln=True, align="L")
             pdf.image(temp_image_path, w=180)  # Adjust width as needed
             temp_images.append(temp_image_path)
         except ValueError as e:
@@ -285,7 +291,7 @@ class ALSDetectionApp:
         pdf_output.seek(0)
 
         st.sidebar.write("### Report saved successfully!")
-        st.sidebar.download_button(label="Download the report", data=pdf_output, file_name="als_detection_model_report.pdf", mime="application/pdf")
+        st.sidebar.download_button(label="Download the report", data=pdf_output, file_name="als_detection_model_graphs_report.pdf", mime="application/pdf")
 
         for temp_image_path in temp_images:
             os.remove(temp_image_path)
@@ -389,14 +395,14 @@ class ALSDetectionApp:
         st.write("### Plotting the Model Performance Comparison")
         metrics_to_plot = st.multiselect("Select metrics to plot", ["accuracy", "precision", "recall", "f1", "roc_auc"], default=[])
         if metrics_to_plot:
-            fig = px.bar(self.performance_df, x="Model", y=metrics_to_plot, barmode="group")
-            st.plotly_chart(fig)
-
-        st.write("### Additional Model Performance Comparison")
-        additional_metrics_to_plot = st.multiselect("Select additional metrics to plot", ["mcc", "balanced_accuracy", "kappa", "brier", "logloss", "f2", "jaccard", "hamming"], default=[])
-        if additional_metrics_to_plot:
-            fig = px.bar(self.performance_df, x="Model", y=additional_metrics_to_plot, barmode="group")
-            st.plotly_chart(fig)
+            color_palette = list(mcolors.TABLEAU_COLORS.values())  # Using Tableau colors for consistency
+            fig, ax = plt.subplots(figsize=(10, 6))
+            self.performance_df[metrics_to_plot].plot(kind='bar', ax=ax, color=color_palette, edgecolor='black')
+            ax.set_title("Model Performance Comparison")
+            ax.set_xlabel("Model")
+            ax.set_ylabel("Scores")
+            ax.legend(loc="best", bbox_to_anchor=(1, 1))
+            st.pyplot(fig)
 
         show_metric_descriptions = st.sidebar.checkbox("Show Metric Descriptions")
         if show_metric_descriptions:
