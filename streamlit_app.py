@@ -278,7 +278,7 @@ class ALSDetectionApp:
             #temp_images.append(temp_image_path)
 
             fig, ax = plt.subplots()
-            performance_df.plot(kind="bar", x="Model", y=["Accuracy", "Precision", "Recall", "F1 Score", "ROC AUC"], ax=ax)
+            self.performance_df.plot(kind="bar", x="Model", y=["Accuracy", "Precision", "Recall", "F1 Score", "ROC AUC"], ax=ax)
             ax.set_title("Model Performance Comparison")
             temp_image_path = "model_performance_comparison.png"
             fig.savefig(temp_image_path)
