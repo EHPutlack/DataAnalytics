@@ -411,27 +411,27 @@ class ALSDetectionApp:
             else:
                 st.write("The patient is predicted not to have ALS.")
 
-  def display_file_to_upload(self):
-      st.write("# Choose a file (CSV or Excel)")
-      uploaded_file = st.file_uploader("Upload", type=["csv", "xlsx"])
-      if uploaded_file is not None:
-          # Check file type
-          if uploaded_file.name.endswith(".csv"):
-              new_data = pd.read_csv(uploaded_file)
-          elif uploaded_file.name.endswith(".xlsx"):
-              new_data = pd.read_excel(uploaded_file)
-  
-          if set(self.parameters).issubset(new_data.columns):
-              new_data_scaled = self.scaler.transform(new_data[self.parameters])
-              model_choice = st.sidebar.selectbox("Choose a model", list(self.models.keys()))
-              model = self.models[model_choice]
-              predictions = model.predict(new_data_scaled)
-              new_data['ALS Prediction'] = predictions
-              st.write("Predictions for uploaded data:")
-              st.dataframe(new_data)
-              self.update_performance_df(new_data)
-          else:
-              st.error("Uploaded file does not contain the necessary parameters.")
+    def display_file_to_upload(self):
+        st.write("# Choose a file (CSV or Excel)")
+        uploaded_file = st.file_uploader("Upload", type=["csv", "xlsx"])
+        if uploaded_file is not None:
+            # Check file type
+            if uploaded_file.name.endswith(".csv"):
+                new_data = pd.read_csv(uploaded_file)
+            elif uploaded_file.name.endswith(".xlsx"):
+                new_data = pd.read_excel(uploaded_file)
+    
+            if set(self.parameters).issubset(new_data.columns):
+                new_data_scaled = self.scaler.transform(new_data[self.parameters])
+                model_choice = st.sidebar.selectbox("Choose a model", list(self.models.keys()))
+                model = self.models[model_choice]
+                predictions = model.predict(new_data_scaled)
+                new_data['ALS Prediction'] = predictions
+                st.write("Predictions for uploaded data:")
+                st.dataframe(new_data)
+                self.update_performance_df(new_data)
+            else:
+                st.error("Uploaded file does not contain the necessary parameters.")
 
     def display_example_data(self):
         st.write("# View Example Patients")
