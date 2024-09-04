@@ -384,12 +384,12 @@ class ALSDetectionApp:
 
     def display_data_input(self):
         st.sidebar.header("Data Input Options")
-        data_input_option = st.sidebar.radio("Select Data Input Method", ["Manual Entry", "CSV Upload", "Example Data"])
+        data_input_option = st.sidebar.radio("Select Data Input Method", ["Manual Entry", "File Upload", "Example Data"])
 
         if data_input_option == "Manual Entry":
             self.display_manual_entry()
-        elif data_input_option == "CSV Upload":
-            self.display_csv_upload()
+        elif data_input_option == "File Upload":
+            self.display_file_to_upload()
         elif data_input_option == "Example Data":
             self.display_example_data()
 
@@ -411,8 +411,8 @@ class ALSDetectionApp:
             else:
                 st.write("The patient is predicted not to have ALS.")
 
-    def display_csv_upload(self):
-        st.write("# Choose a CSV file")
+    def display_file_to_upload(self):
+        st.write("# Choose a file")
         uploaded_file = st.file_uploader("Upload", type="csv")
         if uploaded_file is not None:
             new_data = pd.read_csv(uploaded_file)
