@@ -130,6 +130,7 @@ class ALSDetectionApp:
             np.random.normal(30, 10, num_patients),        # Respiratory Capacity
         ])
 
+        # Ensure labels length matches num_patients
         half_patients = num_patients // 2
         labels = np.concatenate([np.ones(half_patients), np.zeros(num_patients - half_patients)])
         df = pd.DataFrame(data, columns=parameters)
@@ -207,7 +208,7 @@ class ALSDetectionApp:
             # Handle CSV file upload
             if file_extension == 'csv':
                 new_data = pd.read_csv(uploaded_file)
-
+            
             # Handle Excel file upload
             elif file_extension == 'xlsx':
                 new_data = pd.read_excel(uploaded_file)
@@ -224,6 +225,55 @@ class ALSDetectionApp:
                 self.update_performance_df(new_data)
             else:
                 st.error("Uploaded file does not contain the required parameters.")
+
+    def save_report_to_pdf(self):
+        # The PDF creation logic is included here.
+        # This function saves the report with charts like confusion matrices and ROC curves to a PDF.
+
+        # Setup the initial PDF with FPDF
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font("Arial", size=12)
+        pdf.cell(200, 10, txt="ALS Detection Model Report - Graphs Only", ln=True, align="C")
+
+        temp_images = []
+
+        for model_name, metrics in self.model_performance.items():
+            if "Confusion Matrix" in metrics:
+                fig, ax = plt.subplots()
+                sns.heatmap(metrics["confusion_matrix"], annot=True, fmt="d", cmap="Blues", ax=ax)
+                ax.set_title(f"Confusion Matrix for {model_name}")
+                temp_image_path = f"{model_name}_confusion_matrix.png"
+                fig.savefig(temp_image_path, bbox_inches='tight')
+                pdf.add_page()
+                pdf.cell(200, 10, txt=f"Confusion Matrix for {model_name}", ln=True, align="L")
+                pdf.image(temp_image_path, w=180)
+                temp_images.append(temp_image_path)
+
+            if "ROC Curve" in metrics:
+                fig, ax = plt.subplots()
+                fpr, tpr, _ = metrics["roc_curve"]
+                ax.plot(fpr, tpr, label=f"{model_name} (AUC = {metrics['roc_auc']:.2f})")
+                ax.plot([0, 1], [0, 1], linestyle="--")
+                ax.set_title(f"ROC Curve for {model_name}")
+                ax.set_xlabel("False Positive Rate")
+                ax.set_ylabel("True Positive Rate")
+                temp_image_path = f"{model_name}_roc_curve.png"
+                fig.savefig(temp_image_path, bbox_inches='tight')
+                pdf.add_page()
+                pdf.cell(200, 10, txt=f"ROC Curve for {model_name}", ln=True, align="L")
+                pdf.image(temp_image_path, w=180)
+                temp_images.append(temp_image_path)
+
+        pdf_output = BytesIO()
+        pdf_output.write(pdf.output(dest='S').encode('latin1'))
+        pdf_output.seek(0)
+
+        st.sidebar.download_button(label="Download the report", data=pdf_output, file_name="als_detection_model_report.pdf", mime="application/pdf")
+
+        # Remove the temporary images
+        for temp_image_path in temp_images:
+            os.remove(temp_image_path)
 
     def run(self):
         st.sidebar.title("Menu Options")
@@ -306,6 +356,29 @@ class ALSDetectionApp:
         st.write(f"F1 Score: {best_model['f1']:.2f}")
         st.write(f"ROC AUC: {best_model['roc_auc']:.2f}")
 
+        st.write("### Plotting the Model Performance Comparison")
+        metrics_to_plot = st.multiselect("Select metrics to plot", ["accuracy", "precision", "recall", "f1", "roc_auc"], default=[])
+        if metrics_to_plot:
+            color_palette = list(mcolors.TABLEAU_COLORS.values())
+            fig, ax = plt.subplots(figsize=(10, 6))
+            self.performance_df[metrics_to_plot].plot(kind='bar', ax=ax, color=color_palette, edgecolor='black')
+            ax.set_title("Model Performance Comparison")
+            ax.set_xlabel("Model")
+            ax.set_ylabel("Scores")
+            ax.legend(loc="best", bbox_to_anchor=(1, 1))
+            st.pyplot(fig)
+
+        st.write("### Additional Model Performance Comparison")
+        additional_metrics_to_plot = st.multiselect("Select additional metrics to plot", ["mcc", "balanced_accuracy", "kappa", "brier", "logloss", "f2", "jaccard", "hamming"], default=[])
+        if additional_metrics_to_plot:
+            fig, ax = plt.subplots(figsize=(10, 6))
+            self.performance_df[additional_metrics_to_plot].plot(kind='bar', ax=ax, color=color_palette, edgecolor='black')
+            ax.set_title("Additional Model Performance Comparison")
+            ax.set_xlabel("Model")
+            ax.set_ylabel("Scores")
+            ax.legend(loc="best", bbox_to_anchor=(1, 1))
+            st.pyplot(fig)
+
     def display_graphs(self):
         st.write("# Graphs")
         st.sidebar.header("Graph Options")
@@ -320,6 +393,8 @@ class ALSDetectionApp:
                     fig, ax = plt.subplots()
                     sns.heatmap(metrics["confusion_matrix"], annot=True, fmt="d", cmap="Blues", ax=ax)
                     ax.set_title(f"Confusion Matrix for {model_name}")
+                    ax.set_xlabel("Predicted")
+                    ax.set_ylabel("Actual")
                     st.pyplot(fig)
 
                 if "ROC Curve" in graph_options:
@@ -331,6 +406,7 @@ class ALSDetectionApp:
                     ax.set_title(f"ROC Curve for {model_name}")
                     ax.set_xlabel("False Positive Rate")
                     ax.set_ylabel("True Positive Rate")
+                    ax.legend(loc="lower right")
                     st.pyplot(fig)
 
                 if "Precision-Recall Curve" in graph_options:
@@ -339,6 +415,9 @@ class ALSDetectionApp:
                     precision, recall, _ = metrics["precision_recall_curve"]
                     ax.plot(recall, precision, label=f"{model_name}")
                     ax.set_title(f"Precision-Recall Curve for {model_name}")
+                    ax.set_xlabel("Recall")
+                    ax.set_ylabel("Precision")
+                    ax.legend(loc="lower left")
                     st.pyplot(fig)
 
                 if "Feature Importance" in graph_options and hasattr(metrics["model"], "feature_importances_"):
@@ -357,6 +436,9 @@ class ALSDetectionApp:
                 st.write(f"### Confusion Matrix for {selected_model}")
                 fig, ax = plt.subplots()
                 sns.heatmap(metrics["confusion_matrix"], annot=True, fmt="d", cmap="Blues", ax=ax)
+                ax.set_title(f"Confusion Matrix for {selected_model}")
+                ax.set_xlabel("Predicted")
+                ax.set_ylabel("Actual")
                 st.pyplot(fig)
 
             if "ROC Curve" in graph_options:
@@ -364,7 +446,11 @@ class ALSDetectionApp:
                 fig, ax = plt.subplots()
                 fpr, tpr, _ = metrics["roc_curve"]
                 ax.plot(fpr, tpr, label=f"{selected_model} (AUC = {metrics['roc_auc']:.2f})")
+                ax.plot([0, 1], [0, 1], linestyle="--")
                 ax.set_title(f"ROC Curve for {selected_model}")
+                ax.set_xlabel("False Positive Rate")
+                ax.set_ylabel("True Positive Rate")
+                ax.legend(loc="lower right")
                 st.pyplot(fig)
 
             if "Precision-Recall Curve" in graph_options:
@@ -372,6 +458,10 @@ class ALSDetectionApp:
                 fig, ax = plt.subplots()
                 precision, recall, _ = metrics["precision_recall_curve"]
                 ax.plot(recall, precision, label=f"{selected_model}")
+                ax.set_title(f"Precision-Recall Curve for {selected_model}")
+                ax.set_xlabel("Recall")
+                ax.set_ylabel("Precision")
+                ax.legend(loc="lower left")
                 st.pyplot(fig)
 
             if "Feature Importance" in graph_options and hasattr(metrics["model"], "feature_importances_"):
@@ -382,7 +472,25 @@ class ALSDetectionApp:
                 }).sort_values(by='Importance', ascending=False)
                 fig, ax = plt.subplots()
                 sns.barplot(x="Importance", y="Feature", data=feature_importance, ax=ax)
+                ax.set_title(f"Feature Importance for {selected_model}")
                 st.pyplot(fig)
+
+    def display_accessibility_settings(self):
+        st.sidebar.header("Accessibility Settings")
+        font_size = st.sidebar.slider("Adjust Font Size", min_value=10, max_value=30, value=16)
+        st.write(f"<style>body {{font-size: {font_size}px;}}</style>", unsafe_allow_html=True)
+
+        color_theme = st.sidebar.radio("Select Color Theme", ["Default", "High Contrast", "Colorblind Friendly"])
+        if color_theme == "High Contrast":
+            st.write("<style>body {background-color: black; color: white;}</style>", unsafe_allow_html=True)
+        elif color_theme == "Colorblind Friendly":
+            st.write("<style>body {background-color: white; color: black;}}</style>", unsafe_allow_html=True)
+
+        language = st.sidebar.radio("Select Language", ["English", "Spanish", "French"])
+        if language == "Spanish":
+            st.write("Idioma seleccionado: Español")
+        elif language == "French":
+            st.write("Langue sélectionnée: Français")
 
 if __name__ == "__main__":
     app = ALSDetectionApp()
