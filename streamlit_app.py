@@ -445,6 +445,33 @@ class ALSDetectionApp:
             example_data['ALS Prediction'] = predictions
             st.dataframe(example_data)
 
+    def compute_shap_values(self, model, X_train):
+        explainer = None
+        if isinstance(model, (RandomForestClassifier, GradientBoostingClassifier, DecisionTreeClassifier)):
+            explainer = shap.TreeExplainer(model)
+        elif isinstance(model, LogisticRegression):
+            explainer = shap.LinearExplainer(model, X_train)
+        elif isinstance(model, SVC):
+            explainer = shap.KernelExplainer(model.predict, X_train)
+        else:
+            st.warning(f"SHAP values not available for {model.__class__.__name__}")
+            return None
+
+        shap_values = explainer.shap_values(X_train)
+        return explainer, shap_values
+
+    def display_shap_summary(self, model_name):
+        model = self.models[model_name]
+        X_train, X_test, y_train, y_test = self.preprocess_data()[:4]  # Preprocessed data
+
+        explainer, shap_values = self.compute_shap_values(model, X_train)
+        if shap_values is not None:
+            st.write(f"### SHAP Summary Plot for {model_name}")
+            shap.summary_plot(shap_values, X_train, feature_names=self.parameters, show=False)
+            st.pyplot(bbox_inches="tight")
+        else:
+            st.write(f"SHAP values not available for {model_name}")
+  
     def display_model_information(self):
         st.write("# Model Performance Comparison")
         st.dataframe(self.performance_df)
@@ -469,6 +496,10 @@ class ALSDetectionApp:
             ax.legend(loc="best", bbox_to_anchor=(1, 1))
             st.pyplot(fig)
 
+        st.write("### SHAP Value Analysis")
+        selected_model = st.selectbox("Select a model to view SHAP values", list(self.models.keys()))
+        self.display_shap_summary(selected_model)
+      
         st.write("### Additional Model Performance Comparison")
         additional_metrics_to_plot = st.multiselect("Select additional metrics to plot", ["mcc", "balanced_accuracy", "kappa", "brier", "logloss", "f2", "jaccard", "hamming"], default=[])
         if additional_metrics_to_plot:
