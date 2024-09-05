@@ -20,10 +20,6 @@ from fpdf import FPDF
 from io import BytesIO
 import base64
 import os
-try:
-    import shap
-except Exception as e:
-    st.error(f"Error importing SHAP: {e}")
 import matplotlib.colors as mcolors
 
 # Load CSS file
