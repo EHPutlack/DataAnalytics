@@ -22,6 +22,7 @@ import base64
 import os
 import shap
 import numba
+import llvmlite
 import matplotlib.colors as mcolors
 
 # Load CSS file
