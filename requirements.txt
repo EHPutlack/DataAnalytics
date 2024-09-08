@@ -9,6 +9,3 @@ fpdf
 plotly
 openpyxl
 kaleido
-shap
-numba
-llvmlite
