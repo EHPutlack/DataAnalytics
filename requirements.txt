@@ -11,3 +11,4 @@ openpyxl
 kaleido
 shap
 numba
+llvmlite
