@@ -20,7 +20,7 @@ from fpdf import FPDF
 from io import BytesIO
 import base64
 import os
-import SHAP
+import shap
 import matplotlib.colors as mcolors
 
 # Load CSS file
