@@ -9,4 +9,4 @@ fpdf
 plotly
 openpyxl
 kaleido
-SHAP
+shap
