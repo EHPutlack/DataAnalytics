@@ -6,3 +6,6 @@ scikit-learn
 matplotlib
 seaborn
 fpdf
+plotly
+openpyxl
+kaleido
