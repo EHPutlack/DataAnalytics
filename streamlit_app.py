@@ -313,43 +313,43 @@ class ALSDetectionApp:
             st.error(f"Error generating bar graph image: {e}")
             st.write("Please ensure that the 'kaleido' package is installed by running `pip install -U kaleido`.")
     
-        # Include the bar graph for all remaining metrics except accuracy, precision, recall, f1, roc_auc, and logloss
-        try:
-            remaining_metrics = ['mcc', 'balanced_accuracy', 'kappa', 'brier', 'f2', 'jaccard', 'hamming']
-            filtered_remaining_metrics = self.performance_df[remaining_metrics]
-            fig, ax = plt.subplots(figsize=(8, 6))
-            filtered_remaining_metrics.plot(kind='bar', ax=ax, color=mcolors.TABLEAU_COLORS.values(), edgecolor='black')
-            ax.set_title("Model Performance Comparison (Remaining Metrics)")
-            ax.set_xlabel("Model")
-            ax.set_ylabel("Scores")
-            ax.legend(loc="best", bbox_to_anchor=(1, 1))
-            temp_image_path = "model_performance_comparison_remaining_metrics.png"
-            fig.savefig(temp_image_path, bbox_inches='tight')
-            pdf.add_page()
-            pdf.cell(200, 10, txt="Model Performance Comparison (Remaining Metrics)", ln=True, align="L")
-            pdf.image(temp_image_path, w=180)  # Adjust width as needed
-            temp_images.append(temp_image_path)
-        except ValueError as e:
-            st.error(f"Error generating bar graph image: {e}")
-            st.write("Please ensure that the 'kaleido' package is installed by running `pip install -U kaleido`.")
-    
-        # Include the bar graph for the logloss metric only
-        try:
-            fig, ax = plt.subplots(figsize=(8, 6))
-            self.performance_df[['logloss']].plot(kind='bar', ax=ax, color=mcolors.TABLEAU_COLORS.values(), edgecolor='black')
-            ax.set_title("Model Performance Comparison (Logloss Only)")
-            ax.set_xlabel("Model")
-            ax.set_ylabel("Logloss")
-            ax.legend(loc="best", bbox_to_anchor=(1, 1))
-            temp_image_path = "model_performance_comparison_logloss.png"
-            fig.savefig(temp_image_path, bbox_inches='tight')
-            pdf.add_page()
-            pdf.cell(200, 10, txt="Model Performance Comparison (Logloss Only)", ln=True, align="L")
-            pdf.image(temp_image_path, w=180)  # Adjust width as needed
-            temp_images.append(temp_image_path)
-        except ValueError as e:
-            st.error(f"Error generating bar graph image: {e}")
-            st.write("Please ensure that the 'kaleido' package is installed by running `pip install -U kaleido`.")
+      # Include the bar graph for all remaining metrics except accuracy, precision, recall, f1, roc_auc, and logloss
+      try:
+          remaining_metrics = ['mcc', 'balanced_accuracy', 'kappa', 'brier', 'f2', 'jaccard', 'hamming']
+          filtered_remaining_metrics = self.performance_df[remaining_metrics]
+          fig, ax = plt.subplots(figsize=(8, 6))
+          filtered_remaining_metrics.plot(kind='bar', ax=ax, color=mcolors.TABLEAU_COLORS.values(), edgecolor='black')
+          ax.set_title("Model Performance Comparison (Remaining Metrics)")
+          ax.set_xlabel("Model")
+          ax.set_ylabel("Scores")
+          ax.legend(loc="best", bbox_to_anchor=(1, 1))
+          temp_image_path = "model_performance_comparison_remaining_metrics.png"
+          fig.savefig(temp_image_path, bbox_inches='tight')
+          pdf.add_page()
+          pdf.cell(200, 10, txt="Model Performance Comparison (Remaining Metrics)", ln=True, align="L")
+          pdf.image(temp_image_path, w=180)  # Adjust width as needed
+          temp_images.append(temp_image_path)
+      except ValueError as e:
+          st.error(f"Error generating bar graph image: {e}")
+          st.write("Please ensure that the 'kaleido' package is installed by running `pip install -U kaleido`.")
+  
+      # Include the bar graph for the logloss metric only
+      try:
+          fig, ax = plt.subplots(figsize=(8, 6))
+          self.performance_df[['logloss']].plot(kind='bar', ax=ax, color=mcolors.TABLEAU_COLORS.values(), edgecolor='black')
+          ax.set_title("Model Performance Comparison (Logloss Only)")
+          ax.set_xlabel("Model")
+          ax.set_ylabel("Logloss")
+          ax.legend(loc="best", bbox_to_anchor=(1, 1))
+          temp_image_path = "model_performance_comparison_logloss.png"
+          fig.savefig(temp_image_path, bbox_inches='tight')
+          pdf.add_page()
+          pdf.cell(200, 10, txt="Model Performance Comparison (Logloss Only)", ln=True, align="L")
+          pdf.image(temp_image_path, w=180)  # Adjust width as needed
+          temp_images.append(temp_image_path)
+      except ValueError as e:
+          st.error(f"Error generating bar graph image: {e}")
+          st.write("Please ensure that the 'kaleido' package is installed by running `pip install -U kaleido`.")
   
       pdf_output = BytesIO()
       pdf_output.write(pdf.output(dest='S').encode('latin1'))
