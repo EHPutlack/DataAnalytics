@@ -199,38 +199,42 @@ class ALSDetectionApp:
    #     self.performance_df = new_data
 
     def update_performance_df(self, new_data):
-      # Ensure the new data contains all necessary parameters
-      if set(self.parameters).issubset(new_data.columns):
-          # Preprocess the new data and split it into training and testing sets
-          X_new = new_data.drop(columns=['ALS'])
-          y_new = new_data['ALS']
-          X_new_scaled = self.scaler.transform(X_new)
-          X_train_new, X_test_new, y_train_new, y_test_new = train_test_split(X_new_scaled, y_new, test_size=0.2, random_state=0)
-          
-          # Train the models on the new data
-          self.train_models(X_train_new, y_train_new, X_test_new, y_test_new)
-          
-          # Update the performance DataFrame with the new data's model performance
-          self.performance_df = pd.DataFrame([
-              {
-                  "Model": model_name,
-                  "accuracy": metrics["accuracy"],
-                  "precision": metrics["precision"],
-                  "recall": metrics["recall"],
-                  "f1": metrics["f1"],
-                  "roc_auc": metrics["roc_auc"],
-                  "mcc": metrics["mcc"],
-                  "balanced_accuracy": metrics["balanced_accuracy"],
-                  "kappa": metrics["kappa"],
-                  "brier": metrics["brier"],
-                  "logloss": metrics["logloss"],
-                  "f2": metrics["f2"],
-                  "jaccard": metrics["jaccard"],
-                  "hamming": metrics["hamming"]
-              } for model_name, metrics in self.model_performance.items()
-          ])
-      else:
-          st.error("Uploaded data does not contain the necessary parameters.")
+    # Ensure the new data contains all necessary parameters
+    if set(self.parameters).issubset(new_data.columns):
+        # Drop any additional columns such as 'ALS Prediction'
+        if 'ALS Prediction' in new_data.columns:
+            new_data = new_data.drop(columns=['ALS Prediction'])
+
+        # Preprocess the new data and split it into training and testing sets
+        X_new = new_data.drop(columns=['ALS'])
+        y_new = new_data['ALS']
+        X_new_scaled = self.scaler.transform(X_new)
+        X_train_new, X_test_new, y_train_new, y_test_new = train_test_split(X_new_scaled, y_new, test_size=0.2, random_state=0)
+        
+        # Train the models on the new data
+        self.train_models(X_train_new, y_train_new, X_test_new, y_test_new)
+        
+        # Update the performance DataFrame with the new data's model performance
+        self.performance_df = pd.DataFrame([
+            {
+                "Model": model_name,
+                "accuracy": metrics["accuracy"],
+                "precision": metrics["precision"],
+                "recall": metrics["recall"],
+                "f1": metrics["f1"],
+                "roc_auc": metrics["roc_auc"],
+                "mcc": metrics["mcc"],
+                "balanced_accuracy": metrics["balanced_accuracy"],
+                "kappa": metrics["kappa"],
+                "brier": metrics["brier"],
+                "logloss": metrics["logloss"],
+                "f2": metrics["f2"],
+                "jaccard": metrics["jaccard"],
+                "hamming": metrics["hamming"]
+            } for model_name, metrics in self.model_performance.items()
+        ])
+    else:
+        st.error("Uploaded data does not contain the necessary parameters.")
 
     def save_report_to_pdf(self):
       graph_options = ["Confusion Matrix", "ROC Curve", "Precision-Recall Curve", "Feature Importance"]
