@@ -467,6 +467,7 @@ class ALSDetectionApp:
                 new_data = pd.read_excel(uploaded_file)
     
             if set(self.parameters).issubset(new_data.columns):
+                self.update_performance_df(new_data)
                 new_data_scaled = self.scaler.transform(new_data[self.parameters])
                 model_choice = st.sidebar.selectbox("Choose a model", list(self.models.keys()))
                 model = self.models[model_choice]
@@ -474,7 +475,7 @@ class ALSDetectionApp:
                 new_data['ALS Prediction'] = predictions
                 st.write("Predictions for uploaded data:")
                 st.dataframe(new_data)
-                self.update_performance_df(new_data)
+                # self.update_performance_df(new_data)
             else:
                 st.error("Uploaded file does not contain the necessary parameters.")
 
