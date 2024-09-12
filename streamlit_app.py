@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import plotly.express as px
 from sklearn.model_selection import train_test_split
+from sklearn.model_selection import GridSearchCV
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, AdaBoostClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
@@ -90,6 +91,41 @@ class ALSDetectionApp:
             "AdaBoost": AdaBoostClassifier(algorithm="SAMME", random_state=0)
         }
 
+        self.param_grids = {
+            "Random Forest": {
+                'n_estimators': [50, 100, 200],
+                'max_depth': [10, 20, 30],
+                'min_samples_split': [2, 5, 10]
+            },
+            "Logistic Regression": {
+                'penalty': ['l1', 'l2'],
+                'C': [0.01, 0.1, 1, 10],
+                'solver': ['liblinear']
+            },
+            "Support Vector Machine": {
+                'C': [0.1, 1, 10],
+                'kernel': ['linear', 'rbf']
+            },
+            "K-Nearest Neighbors": {
+                'n_neighbors': [3, 5, 7],
+                'weights': ['uniform', 'distance']
+            },
+            "Decision Tree": {
+                'max_depth': [10, 20, 30],
+                'min_samples_split': [2, 5, 10]
+            },
+            "Naive Bayes": {},  # GaussianNB has no hyperparameters to tune
+            "Gradient Boosting": {
+                'n_estimators': [50, 100, 200],
+                'learning_rate': [0.01, 0.1, 0.2],
+                'max_depth': [3, 5, 7]
+            },
+            "AdaBoost": {
+                'n_estimators': [50, 100, 200],
+                'learning_rate': [0.01, 0.1, 0.5]
+            }
+        }
+    
         self.model_performance = {}
 
     @st.cache_data
@@ -148,14 +184,23 @@ class ALSDetectionApp:
 
     def train_models(self, X_train, y_train, X_test, y_test):
         performance_metrics = []
-
+    
         for model_name, model in self.models.items():
-            model.fit(X_train, y_train)
-            y_pred = model.predict(X_test)
-            y_prob = model.predict_proba(X_test)[:, 1] if hasattr(model, "predict_proba") else [0] * len(y_test)
-
+            st.write(f"Training {model_name}...")
+    
+            param_grid = self.param_grids.get(model_name, {})
+            if param_grid:  # If the model has hyperparameters to tune
+                grid_search = GridSearchCV(model, param_grid, cv=3, scoring='accuracy', n_jobs=-1)
+                grid_search.fit(X_train, y_train)
+                best_model = grid_search.best_estimator_
+            else:  # For models without hyperparameters
+                best_model = model.fit(X_train, y_train)
+    
+            y_pred = best_model.predict(X_test)
+            y_prob = best_model.predict_proba(X_test)[:, 1] if hasattr(best_model, "predict_proba") else [0] * len(y_test)
+    
             metrics = {
-                "model": model,
+                "model": best_model,
                 "accuracy": accuracy_score(y_test, y_pred),
                 "precision": precision_score(y_test, y_pred),
                 "recall": recall_score(y_test, y_pred),
@@ -173,9 +218,9 @@ class ALSDetectionApp:
                 "roc_curve": roc_curve(y_test, y_prob),
                 "precision_recall_curve": precision_recall_curve(y_test, y_prob)
             }
-
+    
             self.model_performance[model_name] = metrics
-
+    
             performance_metrics.append({
                 "Model": model_name,
                 "accuracy": metrics["accuracy"],
@@ -192,7 +237,7 @@ class ALSDetectionApp:
                 "jaccard": metrics["jaccard"],
                 "hamming": metrics["hamming"]
             })
-
+    
         self.performance_df = pd.DataFrame(performance_metrics)
 
     def update_performance_df(self, new_data):
