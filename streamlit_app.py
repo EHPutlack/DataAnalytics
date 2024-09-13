@@ -181,7 +181,8 @@ class ALSDetectionApp:
         y = self.df['ALS']
         X_scaled = self.scaler.fit_transform(X)
         return train_test_split(X_scaled, y, test_size=0.2, random_state=0)
-
+      
+    @st.cache_resource
     def train_models(self, X_train, y_train, X_test, y_test):
         performance_metrics = []
     
@@ -239,11 +240,6 @@ class ALSDetectionApp:
             })
     
         self.performance_df = pd.DataFrame(performance_metrics)
-
-    @st.cache_resource
-    def train_models_once(app, X_train, y_train, X_test, y_test):
-        app.train_models(X_train, y_train, X_test, y_test)
-        return app.model_performance
   
     def update_performance_df(self, new_data):
         self.performance_df = pd.concat([self.performance_df, new_data], ignore_index=True)
@@ -736,5 +732,5 @@ if __name__ == "__main__":
     app = ALSDetectionApp()
     app.load_data()
     X_train, X_test, y_train, y_test = app.preprocess_data()
-    app.model_performance = app.train_models_once(app, X_train, y_train, X_test, y_test)
+    app.train_models(X_train, y_train, X_test, y_test)
     app.run()
