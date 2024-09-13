@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import plotly.express as px
 from sklearn.model_selection import train_test_split
-from sklearn.model_selection import GridSearchCV
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, AdaBoostClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
@@ -125,7 +124,7 @@ class ALSDetectionApp:
                 'learning_rate': [0.01, 0.1, 0.5]
             }
         }
-    
+      
         self.model_performance = {}
 
     @st.cache_data
@@ -181,8 +180,7 @@ class ALSDetectionApp:
         y = self.df['ALS']
         X_scaled = self.scaler.fit_transform(X)
         return train_test_split(X_scaled, y, test_size=0.2, random_state=0)
-      
-    @st.cache_resource
+
     def train_models(self, X_train, y_train, X_test, y_test):
         performance_metrics = []
     
@@ -240,7 +238,7 @@ class ALSDetectionApp:
             })
     
         self.performance_df = pd.DataFrame(performance_metrics)
-  
+
     def update_performance_df(self, new_data):
         self.performance_df = pd.concat([self.performance_df, new_data], ignore_index=True)
 
