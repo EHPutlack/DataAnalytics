@@ -240,6 +240,17 @@ class ALSDetectionApp:
     
         self.performance_df = pd.DataFrame(performance_metrics)
 
+    def train_models_once_with_session_state(app, X_train, y_train, X_test, y_test):
+        # Check if the models have already been trained and cached in session state
+        if "model_performance" not in st.session_state:
+            # Train the models and store them in session state
+            app.train_models(X_train, y_train, X_test, y_test)
+            st.session_state.model_performance = app.model_performance
+        else:
+            app.model_performance = st.session_state.model_performance
+    
+        return app.model_performance
+  
     def update_performance_df(self, new_data):
         self.performance_df = pd.concat([self.performance_df, new_data], ignore_index=True)
 
@@ -731,5 +742,5 @@ if __name__ == "__main__":
     app = ALSDetectionApp()
     app.load_data()
     X_train, X_test, y_train, y_test = app.preprocess_data()
-    app.train_models(X_train, y_train, X_test, y_test)
+    app.model_performance = train_models_once_with_session_state(app, X_train, y_train, X_test, y_test)
     app.run()
