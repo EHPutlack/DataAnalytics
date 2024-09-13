@@ -742,5 +742,5 @@ if __name__ == "__main__":
     app = ALSDetectionApp()
     app.load_data()
     X_train, X_test, y_train, y_test = app.preprocess_data()
-    app.model_performance = train_models_once_with_session_state(app, X_train, y_train, X_test, y_test)
+    app.model_performance = app.train_models_once_with_session_state(app, X_train, y_train, X_test, y_test)
     app.run()
