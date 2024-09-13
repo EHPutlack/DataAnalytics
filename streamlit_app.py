@@ -241,9 +241,9 @@ class ALSDetectionApp:
         self.performance_df = pd.DataFrame(performance_metrics)
   
     @st.cache_resource
-    def train_models_once(X_train, y_train, X_test, y_test):
-      app.train_models(X_train, y_train, X_test, y_test)
-      return app.model_performance
+    def train_models_once(app, X_train, y_train, X_test, y_test):
+        app.train_models(X_train, y_train, X_test, y_test)
+        return app.model_performance
 
     def update_performance_df(self, new_data):
         self.performance_df = pd.concat([self.performance_df, new_data], ignore_index=True)
