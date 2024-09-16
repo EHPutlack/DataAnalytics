@@ -509,7 +509,7 @@ class ALSDetectionApp:
 
         st.write("### Additional Model Performance Comparison")
         additional_metrics_to_plot = st.multiselect("Select additional metrics to plot", ["mcc", "balanced_accuracy", "kappa", "brier", "logloss", "f2", "jaccard", "hamming"], default=[])
-            if additional_metrics_to_plot:
+        if additional_metrics_to_plot:
             fig, ax = plt.subplots(figsize=(10, 6))
             self.performance_df.set_index('Model')[additional_metrics_to_plot].plot(kind='bar', ax=ax, color=list(mcolors.TABLEAU_COLORS.values()), edgecolor='black')
             ax.set_title("Additional Model Performance Comparison")
