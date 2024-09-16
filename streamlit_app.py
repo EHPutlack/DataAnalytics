@@ -382,15 +382,15 @@ class ALSDetectionApp:
             st.error(f"Error generating bar graph image: {e}")
             st.write("Please ensure that the 'kaleido' package is installed by running `pip install -U kaleido`.")
     
-          pdf_output = BytesIO()
-          pdf_output.write(pdf.output(dest='S').encode('latin1'))
-          pdf_output.seek(0)
-        
-          st.sidebar.write("### Report saved successfully!")
-          st.sidebar.download_button(label="Download the report", data=pdf_output, file_name="als_detection_model_graphs_report.pdf", mime="application/pdf")
-        
-          for temp_image_path in temp_images:
-              os.remove(temp_image_path)
+        pdf_output = BytesIO()
+        pdf_output.write(pdf.output(dest='S').encode('latin1'))
+        pdf_output.seek(0)
+      
+        st.sidebar.write("### Report saved successfully!")
+        st.sidebar.download_button(label="Download the report", data=pdf_output, file_name="als_detection_model_graphs_report.pdf", mime="application/pdf")
+      
+        for temp_image_path in temp_images:
+            os.remove(temp_image_path)
 
     def run(self):
         st.sidebar.title("Menu Options")
