@@ -195,83 +195,128 @@ class ALSDetectionApp:
 
         self.performance_df = pd.DataFrame(performance_metrics)
 
+   # def update_performance_df(self, new_data):
+   #     self.performance_df = new_data
+
     def update_performance_df(self, new_data):
-        self.performance_df = pd.concat([self.performance_df, new_data], ignore_index=True)
+    # Ensure the new data contains all necessary parameters
+      if set(self.parameters).issubset(new_data.columns):
+          # Drop any additional columns such as 'ALS Prediction'
+          if 'ALS Prediction' in new_data.columns:
+              new_data = new_data.drop(columns=['ALS Prediction'])
+  
+          # Preprocess the new data and split it into training and testing sets
+          X_new = new_data.drop(columns=['ALS'])
+          y_new = new_data['ALS']
+          X_new_scaled = self.scaler.transform(X_new)
+          X_train_new, X_test_new, y_train_new, y_test_new = train_test_split(X_new_scaled, y_new, test_size=0.2, random_state=0)
+          
+          # Train the models on the new data
+          self.train_models(X_train_new, y_train_new, X_test_new, y_test_new)
+          
+          # Update the performance DataFrame with the new data's model performance
+          self.performance_df = pd.DataFrame([
+              {
+                  "Model": model_name,
+                  "accuracy": metrics["accuracy"],
+                  "precision": metrics["precision"],
+                  "recall": metrics["recall"],
+                  "f1": metrics["f1"],
+                  "roc_auc": metrics["roc_auc"],
+                  "mcc": metrics["mcc"],
+                  "balanced_accuracy": metrics["balanced_accuracy"],
+                  "kappa": metrics["kappa"],
+                  "brier": metrics["brier"],
+                  "logloss": metrics["logloss"],
+                  "f2": metrics["f2"],
+                  "jaccard": metrics["jaccard"],
+                  "hamming": metrics["hamming"]
+              } for model_name, metrics in self.model_performance.items()
+          ])
+      else:
+          st.error("Uploaded data does not contain the necessary parameters.")
 
     def save_report_to_pdf(self):
-        graph_options = ["Confusion Matrix", "ROC Curve", "Precision-Recall Curve", "Feature Importance"]
-    
-        pdf = FPDF()
-        pdf.add_page()
-    
-        pdf.set_font("Arial", size=12)
-        pdf.cell(200, 10, txt="ALS Detection Model Report - Graphs Only", ln=True, align="C")
-    
-        temp_images = []
-    
-        for model_name, metrics in self.model_performance.items():
-            if "Confusion Matrix" in graph_options:
-                fig, ax = plt.subplots(figsize=(8, 6))  # Adjust figure size as needed
-                sns.heatmap(metrics["confusion_matrix"], annot=True, fmt="d", cmap="Blues", ax=ax)
-                ax.set_title(f"Confusion Matrix for {model_name}")
-                temp_image_path = f"{model_name}_confusion_matrix.png"
-                fig.savefig(temp_image_path, bbox_inches='tight')
-                pdf.add_page()
-                pdf.cell(200, 10, txt=f"Confusion Matrix for {model_name}", ln=True, align="L")
-                pdf.image(temp_image_path, w=180)  # Adjust width as needed
-                temp_images.append(temp_image_path)
-    
-            if "ROC Curve" in graph_options:
-                fig, ax = plt.subplots(figsize=(8, 6))  # Adjust figure size as needed
-                fpr, tpr, _ = metrics["roc_curve"]
-                ax.plot(fpr, tpr, label=f"{model_name} (AUC = {metrics['roc_auc']:.2f})")
-                ax.plot([0, 1], [0, 1], linestyle="--")
-                ax.set_title(f"ROC Curve for {model_name}")
-                ax.set_xlabel("False Positive Rate")
-                ax.set_ylabel("True Positive Rate")
-                ax.legend(loc="lower right")
-                temp_image_path = f"{model_name}_roc_curve.png"
-                fig.savefig(temp_image_path, bbox_inches='tight')
-                pdf.add_page()
-                pdf.cell(200, 10, txt=f"ROC Curve for {model_name}", ln=True, align="L")
-                pdf.image(temp_image_path, w=180)  # Adjust width as needed
-                temp_images.append(temp_image_path)
-    
-            if "Precision-Recall Curve" in graph_options:
-                fig, ax = plt.subplots(figsize=(8, 6))  # Adjust figure size as needed
-                precision, recall, _ = metrics["precision_recall_curve"]
-                ax.plot(recall, precision, label=f"{model_name}")
-                ax.set_title(f"Precision-Recall Curve for {model_name}")
-                ax.set_xlabel("Recall")
-                ax.set_ylabel("Precision")
-                ax.legend(loc="lower left")
-                temp_image_path = f"{model_name}_precision_recall_curve.png"
-                fig.savefig(temp_image_path, bbox_inches='tight')
-                pdf.add_page()
-                pdf.cell(200, 10, txt=f"Precision-Recall Curve for {model_name}", ln=True, align="L")
-                pdf.image(temp_image_path, w=180)  # Adjust width as needed
-                temp_images.append(temp_image_path)
-    
-            if "Feature Importance" in graph_options and hasattr(metrics["model"], "feature_importances_"):
-                feature_importance = pd.DataFrame({
-                    'Feature': self.parameters,
-                    'Importance': metrics["model"].feature_importances_
-                }).sort_values(by='Importance', ascending=False)
-                fig, ax = plt.subplots(figsize=(8, 6))  # Adjust figure size as needed
-                sns.barplot(x="Importance", y="Feature", data=feature_importance, ax=ax)
-                ax.set_title(f"Feature Importance for {model_name}")
-                temp_image_path = f"{model_name}_feature_importance.png"
-                fig.savefig(temp_image_path, bbox_inches='tight')
-                pdf.add_page()
-                pdf.cell(200, 10, txt=f"Feature Importance for {model_name}", ln=True, align="L")
-                pdf.image(temp_image_path, w=180)  # Adjust width as needed
-                temp_images.append(temp_image_path)
-    
+      graph_options = ["Confusion Matrix", "ROC Curve", "Precision-Recall Curve", "Feature Importance"]
+  
+      pdf = FPDF()
+      pdf.add_page()
+  
+      pdf.set_font("Arial", size=12)
+      pdf.cell(200, 10, txt="ALS Detection Model Report - Graphs Only", ln=True, align="C")
+  
+      temp_images = []
+
+      # Check if the selected metrics exist in self.performance_df before plotting
+      selected_metrics = ["accuracy", "precision", "recall", "f1", "roc_auc"]
+      missing_metrics = [metric for metric in selected_metrics if metric not in self.performance_df.columns]
+      
+      for model_name, metrics in self.model_performance.items():
+          if "Confusion Matrix" in graph_options:
+              fig, ax = plt.subplots(figsize=(8, 6))  # Adjust figure size as needed
+              sns.heatmap(metrics["confusion_matrix"], annot=True, fmt="d", cmap="Blues", ax=ax)
+              ax.set_title(f"Confusion Matrix for {model_name}")
+              temp_image_path = f"{model_name}_confusion_matrix.png"
+              fig.savefig(temp_image_path, bbox_inches='tight')
+              pdf.add_page()
+              pdf.cell(200, 10, txt=f"Confusion Matrix for {model_name}", ln=True, align="L")
+              pdf.image(temp_image_path, w=180)  # Adjust width as needed
+              temp_images.append(temp_image_path)
+  
+          if "ROC Curve" in graph_options:
+              fig, ax = plt.subplots(figsize=(8, 6))  # Adjust figure size as needed
+              fpr, tpr, _ = metrics["roc_curve"]
+              ax.plot(fpr, tpr, label=f"{model_name} (AUC = {metrics['roc_auc']:.2f})")
+              ax.plot([0, 1], [0, 1], linestyle="--")
+              ax.set_title(f"ROC Curve for {model_name}")
+              ax.set_xlabel("False Positive Rate")
+              ax.set_ylabel("True Positive Rate")
+              ax.legend(loc="lower right")
+              temp_image_path = f"{model_name}_roc_curve.png"
+              fig.savefig(temp_image_path, bbox_inches='tight')
+              pdf.add_page()
+              pdf.cell(200, 10, txt=f"ROC Curve for {model_name}", ln=True, align="L")
+              pdf.image(temp_image_path, w=180)  # Adjust width as needed
+              temp_images.append(temp_image_path)
+  
+          if "Precision-Recall Curve" in graph_options:
+              fig, ax = plt.subplots(figsize=(8, 6))  # Adjust figure size as needed
+              precision, recall, _ = metrics["precision_recall_curve"]
+              ax.plot(recall, precision, label=f"{model_name}")
+              ax.set_title(f"Precision-Recall Curve for {model_name}")
+              ax.set_xlabel("Recall")
+              ax.set_ylabel("Precision")
+              ax.legend(loc="lower left")
+              temp_image_path = f"{model_name}_precision_recall_curve.png"
+              fig.savefig(temp_image_path, bbox_inches='tight')
+              pdf.add_page()
+              pdf.cell(200, 10, txt=f"Precision-Recall Curve for {model_name}", ln=True, align="L")
+              pdf.image(temp_image_path, w=180)  # Adjust width as needed
+              temp_images.append(temp_image_path)
+  
+          if "Feature Importance" in graph_options and hasattr(metrics["model"], "feature_importances_"):
+              feature_importance = pd.DataFrame({
+                  'Feature': self.parameters,
+                  'Importance': metrics["model"].feature_importances_
+              }).sort_values(by='Importance', ascending=False)
+              fig, ax = plt.subplots(figsize=(8, 6))  # Adjust figure size as needed
+              sns.barplot(x="Importance", y="Feature", data=feature_importance, ax=ax)
+              ax.set_title(f"Feature Importance for {model_name}")
+              temp_image_path = f"{model_name}_feature_importance.png"
+              fig.savefig(temp_image_path, bbox_inches='tight')
+              pdf.add_page()
+              pdf.cell(200, 10, txt=f"Feature Importance for {model_name}", ln=True, align="L")
+              pdf.image(temp_image_path, w=180)  # Adjust width as needed
+              temp_images.append(temp_image_path)
+            
+      if missing_metrics:
+        st.error(f"Missing metrics: {missing_metrics} in performance DataFrame.")
+      else:
         # Include the bar graph for Model Performance Comparison with selected metrics (accuracy, precision, recall, f1, roc_auc)
         try:
             selected_metrics = ["accuracy", "precision", "recall", "f1", "roc_auc"]
             fig, ax = plt.subplots(figsize=(8, 6))
-            self.performance_df.set_index('Model')[selected_metrics].plot(kind='bar', ax=ax, color=list(mcolors.TABLEAU_COLORS.values()), edgecolor='black')
+            self.performance_df[selected_metrics].plot(kind='bar', ax=ax, color=mcolors.TABLEAU_COLORS.values(), edgecolor='black')
             ax.set_title("Model Performance Comparison (Selected Metrics)")
             ax.set_xlabel("Model")
             ax.set_ylabel("Scores")
@@ -291,7 +336,7 @@ class ALSDetectionApp:
             metrics_to_exclude = ['logloss']
             filtered_metrics = self.performance_df.drop(columns=metrics_to_exclude)
             fig, ax = plt.subplots(figsize=(8, 6))
-            filtered_metrics.set_index('Model').plot(kind='bar', ax=ax, color=list(mcolors.TABLEAU_COLORS.values()), edgecolor='black')
+            filtered_metrics.plot(kind='bar', ax=ax, color=mcolors.TABLEAU_COLORS.values(), edgecolor='black')
             ax.set_title("Model Performance Comparison (Excluding Logloss)")
             ax.set_xlabel("Model")
             ax.set_ylabel("Scores")
@@ -311,7 +356,7 @@ class ALSDetectionApp:
             remaining_metrics = ['mcc', 'balanced_accuracy', 'kappa', 'brier', 'f2', 'jaccard', 'hamming']
             filtered_remaining_metrics = self.performance_df[remaining_metrics]
             fig, ax = plt.subplots(figsize=(8, 6))
-            filtered_remaining_metrics.set_index('Model').plot(kind='bar', ax=ax, color=list(mcolors.TABLEAU_COLORS.values()), edgecolor='black')
+            filtered_remaining_metrics.plot(kind='bar', ax=ax, color=mcolors.TABLEAU_COLORS.values(), edgecolor='black')
             ax.set_title("Model Performance Comparison (Remaining Metrics)")
             ax.set_xlabel("Model")
             ax.set_ylabel("Scores")
@@ -325,7 +370,7 @@ class ALSDetectionApp:
         except ValueError as e:
             st.error(f"Error generating bar graph image: {e}")
             st.write("Please ensure that the 'kaleido' package is installed by running `pip install -U kaleido`.")
-  
+    
         # Include the bar graph for the logloss metric only
         try:
             fig, ax = plt.subplots(figsize=(8, 6))
@@ -344,15 +389,15 @@ class ALSDetectionApp:
             st.error(f"Error generating bar graph image: {e}")
             st.write("Please ensure that the 'kaleido' package is installed by running `pip install -U kaleido`.")
   
-        pdf_output = BytesIO()
-        pdf_output.write(pdf.output(dest='S').encode('latin1'))
-        pdf_output.seek(0)
-    
-        st.sidebar.write("### Report saved successfully!")
-        st.sidebar.download_button(label="Download the report", data=pdf_output, file_name="als_detection_model_graphs_report.pdf", mime="application/pdf")
-    
-        for temp_image_path in temp_images:
-            os.remove(temp_image_path)
+      pdf_output = BytesIO()
+      pdf_output.write(pdf.output(dest='S').encode('latin1'))
+      pdf_output.seek(0)
+  
+      st.sidebar.write("### Report saved successfully!")
+      st.sidebar.download_button(label="Download the report", data=pdf_output, file_name="als_detection_model_graphs_report.pdf", mime="application/pdf")
+  
+      for temp_image_path in temp_images:
+          os.remove(temp_image_path)
 
     def run(self):
         st.sidebar.title("Menu Options")
@@ -422,6 +467,7 @@ class ALSDetectionApp:
                 new_data = pd.read_excel(uploaded_file)
     
             if set(self.parameters).issubset(new_data.columns):
+                self.update_performance_df(new_data)
                 new_data_scaled = self.scaler.transform(new_data[self.parameters])
                 model_choice = st.sidebar.selectbox("Choose a model", list(self.models.keys()))
                 model = self.models[model_choice]
@@ -429,7 +475,7 @@ class ALSDetectionApp:
                 new_data['ALS Prediction'] = predictions
                 st.write("Predictions for uploaded data:")
                 st.dataframe(new_data)
-                self.update_performance_df(new_data)
+                # self.update_performance_df(new_data)
             else:
                 st.error("Uploaded file does not contain the necessary parameters.")
 
@@ -448,7 +494,7 @@ class ALSDetectionApp:
     def display_model_information(self):
         st.write("# Model Performance Comparison")
         st.dataframe(self.performance_df)
-    
+
         best_model = self.performance_df.loc[self.performance_df["accuracy"].idxmax()]
         st.write(f"### Best Model: {best_model['Model']}")
         st.write(f"Accuracy: {best_model['accuracy']:.2f}")
@@ -456,23 +502,24 @@ class ALSDetectionApp:
         st.write(f"Recall: {best_model['recall']:.2f}")
         st.write(f"F1 Score: {best_model['f1']:.2f}")
         st.write(f"ROC AUC: {best_model['roc_auc']:.2f}")
-    
+
         st.write("### Plotting the Model Performance Comparison")
         metrics_to_plot = st.multiselect("Select metrics to plot", ["accuracy", "precision", "recall", "f1", "roc_auc"], default=[])
         if metrics_to_plot:
+            color_palette = list(mcolors.TABLEAU_COLORS.values())  # Using Tableau colors for consistency
             fig, ax = plt.subplots(figsize=(10, 6))
-            self.performance_df.set_index('Model')[metrics_to_plot].plot(kind='bar', ax=ax, color=list(mcolors.TABLEAU_COLORS.values()), edgecolor='black')
+            self.performance_df[metrics_to_plot].plot(kind='bar', ax=ax, color=color_palette, edgecolor='black')
             ax.set_title("Model Performance Comparison")
             ax.set_xlabel("Model")
             ax.set_ylabel("Scores")
             ax.legend(loc="best", bbox_to_anchor=(1, 1))
             st.pyplot(fig)
-    
+      
         st.write("### Additional Model Performance Comparison")
         additional_metrics_to_plot = st.multiselect("Select additional metrics to plot", ["mcc", "balanced_accuracy", "kappa", "brier", "logloss", "f2", "jaccard", "hamming"], default=[])
         if additional_metrics_to_plot:
             fig, ax = plt.subplots(figsize=(10, 6))
-            self.performance_df.set_index('Model')[additional_metrics_to_plot].plot(kind='bar', ax=ax, color=list(mcolors.TABLEAU_COLORS.values()), edgecolor='black')
+            self.performance_df[additional_metrics_to_plot].plot(kind='bar', ax=ax, color=color_palette, edgecolor='black')
             ax.set_title("Additional Model Performance Comparison")
             ax.set_xlabel("Model")
             ax.set_ylabel("Scores")
