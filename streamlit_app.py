@@ -182,25 +182,24 @@ class ALSDetectionApp:
         X_scaled = self.scaler.fit_transform(X)
         return train_test_split(X_scaled, y, test_size=0.2, random_state=0)
 
-    @st.cache_resource
     def train_models(_self, X_train, y_train, X_test, y_test):
         if "model_performance" not in st.session_state:
             performance_metrics = []
-        
-            for model_name, model in _self.models.items():
+
+            for model_name, model in self.models.items():
                 st.write(f"Training {model_name}...")
-        
-                param_grid = _self.param_grids.get(model_name, {})
+
+                param_grid = self.param_grids.get(model_name, {})
                 if param_grid:  # If the model has hyperparameters to tune
                     grid_search = GridSearchCV(model, param_grid, cv=3, scoring='accuracy', n_jobs=-1)
                     grid_search.fit(X_train, y_train)
                     best_model = grid_search.best_estimator_
                 else:  # For models without hyperparameters
                     best_model = model.fit(X_train, y_train)
-        
+
                 y_pred = best_model.predict(X_test)
                 y_prob = best_model.predict_proba(X_test)[:, 1] if hasattr(best_model, "predict_proba") else [0] * len(y_test)
-        
+
                 metrics = {
                     "model": best_model,
                     "accuracy": accuracy_score(y_test, y_pred),
@@ -220,9 +219,9 @@ class ALSDetectionApp:
                     "roc_curve": roc_curve(y_test, y_prob),
                     "precision_recall_curve": precision_recall_curve(y_test, y_prob)
                 }
-        
-                _self.model_performance[model_name] = metrics
-        
+
+                self.model_performance[model_name] = metrics
+
                 performance_metrics.append({
                     "Model": model_name,
                     "accuracy": metrics["accuracy"],
@@ -239,11 +238,10 @@ class ALSDetectionApp:
                     "jaccard": metrics["jaccard"],
                     "hamming": metrics["hamming"]
                 })
-        
-            _self.performance_df = pd.DataFrame(performance_metrics)
-            st.session_state.model_performance = _self.model_performance
+
+            self.performance_df = pd.DataFrame(performance_metrics)
         else:
-            _self.model_performance = st.session_state.model_performance
+            self.model_performance = st.session_state.model_performance
   
     def update_performance_df(self, new_data):
         self.performance_df = pd.concat([self.performance_df, new_data], ignore_index=True)
@@ -736,5 +734,5 @@ if __name__ == "__main__":
     app = ALSDetectionApp()
     app.load_data()
     X_train, X_test, y_train, y_test = app.preprocess_data()
-    app.train_models(app, X_train, y_train, X_test, y_test)
+    app.train_models(X_train, y_train, X_test, y_test)
     app.run()
