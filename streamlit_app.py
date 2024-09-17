@@ -182,6 +182,7 @@ class ALSDetectionApp:
         X_scaled = self.scaler.fit_transform(X)
         return train_test_split(X_scaled, y, test_size=0.2, random_state=0)
 
+    @st.cache_resource
     def train_models(self, X_train, y_train, X_test, y_test):
         if "model_performance" not in st.session_state:
             performance_metrics = []
