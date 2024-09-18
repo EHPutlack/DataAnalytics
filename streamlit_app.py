@@ -405,10 +405,16 @@ class ALSDetectionApp:
     def run(self):
         st.sidebar.title("Menu Options")
     
-        query_params = st.experimental_get_query_params()
-        default_menu = query_params.get("menu_option", ["Welcome"])[0]
+        if 'menu_option' not in st.session_state:
+            st.session_state['menu_option'] = "Welcome"
     
-        menu_option = st.sidebar.radio("Choose an option", ["Welcome", "Data Input", "Model Information", "Graphs", "Accessibility Settings"], index=["Welcome", "Data Input", "Model Information", "Graphs", "Accessibility Settings"].index(default_menu))
+        menu_option = st.sidebar.radio(
+            "Choose an option", 
+            ["Welcome", "Data Input", "Model Information", "Graphs", "Accessibility Settings"], 
+            index=["Welcome", "Data Input", "Model Information", "Graphs", "Accessibility Settings"].index(st.session_state['menu_option'])
+        )
+    
+        st.session_state['menu_option'] = menu_option
     
         if menu_option == "Welcome":
             self.display_welcome()
@@ -435,7 +441,7 @@ class ALSDetectionApp:
         """)
     
         if st.button("Go to Data Input"):
-            st.experimental_set_query_params(menu_option="Data Input")
+            st.session_state['menu_option'] = "Data Input"
 
     def display_data_input(self):
         st.sidebar.header("Data Input Options")
