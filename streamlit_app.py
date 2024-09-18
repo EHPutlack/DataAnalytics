@@ -404,8 +404,12 @@ class ALSDetectionApp:
 
     def run(self):
         st.sidebar.title("Menu Options")
-        menu_option = st.sidebar.radio("Choose an option", ["Welcome", "Data Input", "Model Information", "Graphs", "Accessibility Settings"])
-
+    
+        query_params = st.experimental_get_query_params()
+        default_menu = query_params.get("menu_option", ["Welcome"])[0]
+    
+        menu_option = st.sidebar.radio("Choose an option", ["Welcome", "Data Input", "Model Information", "Graphs", "Accessibility Settings"], index=["Welcome", "Data Input", "Model Information", "Graphs", "Accessibility Settings"].index(default_menu))
+    
         if menu_option == "Welcome":
             self.display_welcome()
         elif menu_option == "Data Input":
@@ -416,7 +420,7 @@ class ALSDetectionApp:
             self.display_graphs()
         elif menu_option == "Accessibility Settings":
             self.display_accessibility_settings()
-
+    
         if st.sidebar.button("Save Report to PDF"):
             self.save_report_to_pdf()
 
@@ -430,9 +434,8 @@ class ALSDetectionApp:
         - Use the sidebar to navigate through the different sections.
         """)
     
-        if st.button("Go to File Upload"):
-            st.experimental_set_query_params(menu_option="Data Input", data_input_option="File Upload")
-            self.display_data_input()
+        if st.button("Go to Data Input"):
+            st.experimental_set_query_params(menu_option="Data Input")
 
     def display_data_input(self):
         st.sidebar.header("Data Input Options")
