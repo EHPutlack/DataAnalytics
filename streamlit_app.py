@@ -429,6 +429,10 @@ class ALSDetectionApp:
         - Visualize performance metrics and feature importance.
         - Use the sidebar to navigate through the different sections.
         """)
+    
+        if st.button("Go to File Upload"):
+            st.experimental_set_query_params(menu_option="Data Input", data_input_option="File Upload")
+            self.display_data_input()
 
     def display_data_input(self):
         st.sidebar.header("Data Input Options")
