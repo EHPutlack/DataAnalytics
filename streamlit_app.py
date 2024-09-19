@@ -408,6 +408,9 @@ class ALSDetectionApp:
         if 'menu_option' not in st.session_state:
             st.session_state['menu_option'] = "Welcome"
     
+        if 'data_input_option' not in st.session_state:
+            st.session_state['data_input_option'] = "Manual Entry"
+    
         menu_option = st.sidebar.radio(
             "Choose an option", 
             ["Welcome", "Data Input", "Model Information", "Graphs", "Accessibility Settings"], 
@@ -440,19 +443,27 @@ class ALSDetectionApp:
         - Use the sidebar to navigate through the different sections.
         """)
     
-        if st.button("Go to Data Input"):
+        if st.button("Get Started"):
             st.session_state['menu_option'] = "Data Input"
+            st.session_state['data_input_option'] = "File Upload"
 
     def display_data_input(self):
-        st.sidebar.header("Data Input Options")
-        data_input_option = st.sidebar.radio("Select Data Input Method", ["Manual Entry", "File Upload", "Example Data"])
+    st.sidebar.header("Data Input Options")
 
-        if data_input_option == "Manual Entry":
-            self.display_manual_entry()
-        elif data_input_option == "File Upload":
-            self.display_file_to_upload()
-        elif data_input_option == "Example Data":
-            self.display_example_data()
+    data_input_option = st.sidebar.radio(
+        "Select Data Input Method", 
+        ["Manual Entry", "File Upload", "Example Data"],
+        index=["Manual Entry", "File Upload", "Example Data"].index(st.session_state['data_input_option'])
+    )
+
+    st.session_state['data_input_option'] = data_input_option
+
+    if data_input_option == "Manual Entry":
+        self.display_manual_entry()
+    elif data_input_option == "File Upload":
+        self.display_file_to_upload()
+    elif data_input_option == "Example Data":
+        self.display_example_data()
 
     def display_manual_entry(self):
         st.write("# Enter new patient data")
