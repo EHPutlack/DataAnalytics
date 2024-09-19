@@ -443,10 +443,9 @@ class ALSDetectionApp:
         - Use the sidebar to navigate through the different sections.
         """)
     
-        if st.button("Get Started"):
+        if st.button("Go to File Upload"):
             st.session_state['menu_option'] = "Data Input"
             st.session_state['data_input_option'] = "File Upload"
-            st.experimental_rerun()
 
     def display_data_input(self):
         st.sidebar.header("Data Input Options")
