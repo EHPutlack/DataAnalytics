@@ -448,22 +448,22 @@ class ALSDetectionApp:
             st.session_state['data_input_option'] = "File Upload"
 
     def display_data_input(self):
-    st.sidebar.header("Data Input Options")
-
-    data_input_option = st.sidebar.radio(
-        "Select Data Input Method", 
-        ["Manual Entry", "File Upload", "Example Data"],
-        index=["Manual Entry", "File Upload", "Example Data"].index(st.session_state['data_input_option'])
-    )
-
-    st.session_state['data_input_option'] = data_input_option
-
-    if data_input_option == "Manual Entry":
-        self.display_manual_entry()
-    elif data_input_option == "File Upload":
-        self.display_file_to_upload()
-    elif data_input_option == "Example Data":
-        self.display_example_data()
+        st.sidebar.header("Data Input Options")
+    
+        data_input_option = st.sidebar.radio(
+            "Select Data Input Method", 
+            ["Manual Entry", "File Upload", "Example Data"],
+            index=["Manual Entry", "File Upload", "Example Data"].index(st.session_state['data_input_option'])
+        )
+    
+        st.session_state['data_input_option'] = data_input_option
+    
+        if data_input_option == "Manual Entry":
+            self.display_manual_entry()
+        elif data_input_option == "File Upload":
+            self.display_file_to_upload()
+        elif data_input_option == "Example Data":
+            self.display_example_data()
 
     def display_manual_entry(self):
         st.write("# Enter new patient data")
