@@ -409,7 +409,7 @@ class ALSDetectionApp:
             st.session_state['menu_option'] = "Welcome"
     
         if 'data_input_option' not in st.session_state:
-            st.session_state['data_input_option'] = "Manual Entry"
+            st.session_state['data_input_option'] = "File Upload"
     
         menu_option = st.sidebar.radio(
             "Choose an option", 
