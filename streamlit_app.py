@@ -446,8 +446,7 @@ class ALSDetectionApp:
         if st.button("Go to File Upload"):
             st.session_state['menu_option'] = "Data Input"
             st.session_state['data_input_option'] = "File Upload"
-            st.session_state['menu_option'] = "Data Input"
-            st.session_state['data_input_option'] = "File Upload"
+            self.run()
 
     def display_data_input(self):
         st.sidebar.header("Data Input Options")
