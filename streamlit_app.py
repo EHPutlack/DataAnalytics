@@ -432,7 +432,6 @@ class ALSDetectionApp:
 
     def run(self):
         global z  # Access the global variable z
-        z += 1  # Increment z each time run() is called
         st.write(f"Value of z: {z}")
       
         st.sidebar.title("Menu Options")
@@ -444,6 +443,8 @@ class ALSDetectionApp:
         else:
             st.markdown(show_sidebar_style, unsafe_allow_html=True)
 
+        z += 1  # Increment z each time run() is called
+      
         #Sets the Initial sidebar options
         if 'menu_option' not in st.session_state:
             st.session_state['menu_option'] = "Welcome"
