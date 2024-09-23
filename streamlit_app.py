@@ -433,6 +433,7 @@ class ALSDetectionApp:
     def run(self):
         global z  # Access the global variable z
         z += 1  # Increment z each time run() is called
+        st.write(f"Value of z: {z}")
       
         st.sidebar.title("Menu Options")
 
