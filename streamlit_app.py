@@ -59,6 +59,19 @@ st.markdown(
     unsafe_allow_html=True
 )
 
+hide_sidebar_style = """
+    <style>
+    [data-testid="stSidebar"][aria-expanded="true"] {
+        width: 0;
+        margin-left: -300px;
+    }
+    [data-testid="stSidebar"][aria-expanded="false"] {
+        width: 0;
+        margin-left: -300px;
+    }
+    </style>
+    """
+
 class ALSDetectionApp:
     def __init__(self):
         self.general_parameters = [
