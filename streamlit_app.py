@@ -23,6 +23,8 @@ import base64
 import os
 import matplotlib.colors as mcolors
 
+z = 0  # Global variable to track run calls
+
 # Load CSS file
 def local_css(file_name):
     with open(file_name) as f:
@@ -431,8 +433,19 @@ class ALSDetectionApp:
           os.remove(temp_image_path)
 
     def run(self):
+        global z  # Access the global variable z
+        z += 1  # Increment z each time run() is called
+      
         st.sidebar.title("Menu Options")
-    
+
+        # Conditionally set sidebar visibility based on z
+        if z == 1:
+            st.markdown(hide_sidebar_style, unsafe_allow_html=True)
+          
+        else:
+            st.markdown(show_sidebar_style, unsafe_allow_html=True)
+
+        #Sets the Initial sidebar options
         if 'menu_option' not in st.session_state:
             st.session_state['menu_option'] = "Welcome"
     
