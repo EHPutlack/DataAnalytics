@@ -483,7 +483,6 @@ class ALSDetectionApp:
         """)
     
         if st.button("Get Started"):
-            st.session_state['menu_option'] = "Data Input"
             st.session_state['data_input_option'] = "File Upload"
             self.display_data_input()
 
