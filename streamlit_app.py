@@ -87,8 +87,6 @@ show_sidebar_style = """
     </style>
     """
 
-st.markdown(hide_sidebar_style, unsafe_allow_html=True)
-
 class ALSDetectionApp:
     def __init__(self):
         self.general_parameters = [
