@@ -438,10 +438,10 @@ class ALSDetectionApp:
 
         # Conditionally set sidebar visibility based on z
         if z == 1:
-            st.markdown(hide_sidebar_style, unsafe_allow_html=True)
+            st.markdown(show_sidebar_style, unsafe_allow_html=True)
           
         else:
-            st.markdown(show_sidebar_style, unsafe_allow_html=True)
+            st.markdown(hide_sidebar_style, unsafe_allow_html=True)
 
         #Sets the Initial sidebar options
         if 'menu_option' not in st.session_state:
