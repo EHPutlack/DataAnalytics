@@ -15,3 +15,4 @@ This app allows users to input information about patient, or patients, that may 
    ```
    $ streamlit run streamlit_app.py
    ```
+This version adds hyperparameter tuning, and attempts to create a proper pipeline for the app in an attempt to allow people to properly upload their own data
