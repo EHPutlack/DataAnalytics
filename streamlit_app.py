@@ -22,6 +22,8 @@ import base64
 import os
 import matplotlib.colors as mcolors
 
+z = 1  # Global variable to track run calls
+
 # Load CSS file
 def local_css(file_name):
     with open(file_name) as f:
@@ -393,6 +395,9 @@ class ALSDetectionApp:
             os.remove(temp_image_path)
 
     def run(self):
+        global z  # Access the global variable z
+        z += 1  # Increment z each time run() is called
+      
         st.sidebar.title("Menu Options")
         menu_option = st.sidebar.radio("Choose an option", ["Welcome", "Data Input", "Model Information", "Graphs", "Accessibility Settings"])
 
