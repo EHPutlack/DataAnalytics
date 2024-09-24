@@ -17,3 +17,6 @@ A simple Streamlit app that draws a spiral.
    ```
    $ streamlit run streamlit_app.py
    ```
+
+
+This version is meant to be a slight variation of the fully functional, but incomplete main version.
