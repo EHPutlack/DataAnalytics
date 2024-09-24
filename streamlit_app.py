@@ -487,6 +487,7 @@ class ALSDetectionApp:
         if st.button("Get Started"):
             st.session_state['data_input_option'] = "File Upload"
             self.display_data_input()
+            st.markdown(show_sidebar_style, unsafe_allow_html=True)
 
     def display_data_input(self):
         st.sidebar.header("Data Input Options")
