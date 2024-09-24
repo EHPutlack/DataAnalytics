@@ -147,53 +147,65 @@ class ALSDetectionApp:
         return train_test_split(X_scaled, y, test_size=0.2, random_state=0)
 
     def train_models(self, X_train, y_train, X_test, y_test):
-        performance_metrics = []
+        if "model_performance" not in st.session_state:
+            performance_metrics = []
 
-        for model_name, model in self.models.items():
-            model.fit(X_train, y_train)
-            y_pred = model.predict(X_test)
-            y_prob = model.predict_proba(X_test)[:, 1] if hasattr(model, "predict_proba") else [0] * len(y_test)
+            for model_name, model in self.models.items():
+                st.write(f"Training {model_name}...")
 
-            metrics = {
-                "model": model,
-                "accuracy": accuracy_score(y_test, y_pred),
-                "precision": precision_score(y_test, y_pred),
-                "recall": recall_score(y_test, y_pred),
-                "f1": f1_score(y_test, y_pred),
-                "roc_auc": roc_auc_score(y_test, y_prob),
-                "mcc": matthews_corrcoef(y_test, y_pred),
-                "balanced_accuracy": balanced_accuracy_score(y_test, y_pred),
-                "kappa": cohen_kappa_score(y_test, y_pred),
-                "brier": brier_score_loss(y_test, y_prob),
-                "logloss": log_loss(y_test, y_prob),
-                "f2": fbeta_score(y_test, y_pred, beta=2),
-                "jaccard": jaccard_score(y_test, y_pred),
-                "hamming": hamming_loss(y_test, y_pred),
-                "confusion_matrix": confusion_matrix(y_test, y_pred),
-                "roc_curve": roc_curve(y_test, y_prob),
-                "precision_recall_curve": precision_recall_curve(y_test, y_prob)
-            }
+                param_grid = self.param_grids.get(model_name, {})
+                if param_grid:  # If the model has hyperparameters to tune
+                    grid_search = GridSearchCV(model, param_grid, cv=3, scoring='accuracy', n_jobs=-1)
+                    grid_search.fit(X_train, y_train)
+                    best_model = grid_search.best_estimator_
+                else:  # For models without hyperparameters
+                    best_model = model.fit(X_train, y_train)
 
-            self.model_performance[model_name] = metrics
+                y_pred = best_model.predict(X_test)
+                y_prob = best_model.predict_proba(X_test)[:, 1] if hasattr(best_model, "predict_proba") else [0] * len(y_test)
 
-            performance_metrics.append({
-                "Model": model_name,
-                "accuracy": metrics["accuracy"],
-                "precision": metrics["precision"],
-                "recall": metrics["recall"],
-                "f1": metrics["f1"],
-                "roc_auc": metrics["roc_auc"],
-                "mcc": metrics["mcc"],
-                "balanced_accuracy": metrics["balanced_accuracy"],
-                "kappa": metrics["kappa"],
-                "brier": metrics["brier"],
-                "logloss": metrics["logloss"],
-                "f2": metrics["f2"],
-                "jaccard": metrics["jaccard"],
-                "hamming": metrics["hamming"]
-            })
+                metrics = {
+                    "model": best_model,
+                    "accuracy": accuracy_score(y_test, y_pred),
+                    "precision": precision_score(y_test, y_pred),
+                    "recall": recall_score(y_test, y_pred),
+                    "f1": f1_score(y_test, y_pred),
+                    "roc_auc": roc_auc_score(y_test, y_prob),
+                    "mcc": matthews_corrcoef(y_test, y_pred),
+                    "balanced_accuracy": balanced_accuracy_score(y_test, y_pred),
+                    "kappa": cohen_kappa_score(y_test, y_pred),
+                    "brier": brier_score_loss(y_test, y_prob),
+                    "logloss": log_loss(y_test, y_prob),
+                    "f2": fbeta_score(y_test, y_pred, beta=2),
+                    "jaccard": jaccard_score(y_test, y_pred),
+                    "hamming": hamming_loss(y_test, y_pred),
+                    "confusion_matrix": confusion_matrix(y_test, y_pred),
+                    "roc_curve": roc_curve(y_test, y_prob),
+                    "precision_recall_curve": precision_recall_curve(y_test, y_prob)
+                }
 
-        self.performance_df = pd.DataFrame(performance_metrics)
+                self.model_performance[model_name] = metrics
+
+                performance_metrics.append({
+                    "Model": model_name,
+                    "accuracy": metrics["accuracy"],
+                    "precision": metrics["precision"],
+                    "recall": metrics["recall"],
+                    "f1": metrics["f1"],
+                    "roc_auc": metrics["roc_auc"],
+                    "mcc": metrics["mcc"],
+                    "balanced_accuracy": metrics["balanced_accuracy"],
+                    "kappa": metrics["kappa"],
+                    "brier": metrics["brier"],
+                    "logloss": metrics["logloss"],
+                    "f2": metrics["f2"],
+                    "jaccard": metrics["jaccard"],
+                    "hamming": metrics["hamming"]
+                })
+
+            self.performance_df = pd.DataFrame(performance_metrics)
+        else:
+            self.model_performance = st.session_state.model_performance
 
    # def update_performance_df(self, new_data):
    #     self.performance_df = new_data
