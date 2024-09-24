@@ -91,6 +91,41 @@ class ALSDetectionApp:
             "AdaBoost": AdaBoostClassifier(algorithm="SAMME", random_state=0)
         }
 
+        self.param_grids = {
+            "Random Forest": {
+                'n_estimators': [50, 100, 200],
+                'max_depth': [10, 20, 30],
+                'min_samples_split': [2, 5, 10]
+            },
+            "Logistic Regression": {
+                'penalty': ['l1', 'l2'],
+                'C': [0.01, 0.1, 1, 10],
+                'solver': ['liblinear']
+            },
+            "Support Vector Machine": {
+                'C': [0.1, 1, 10],
+                'kernel': ['linear', 'rbf']
+            },
+            "K-Nearest Neighbors": {
+                'n_neighbors': [3, 5, 7],
+                'weights': ['uniform', 'distance']
+            },
+            "Decision Tree": {
+                'max_depth': [10, 20, 30],
+                'min_samples_split': [2, 5, 10]
+            },
+            "Naive Bayes": {},  # GaussianNB has no hyperparameters to tune
+            "Gradient Boosting": {
+                'n_estimators': [50, 100, 200],
+                'learning_rate': [0.01, 0.1, 0.2],
+                'max_depth': [3, 5, 7]
+            },
+            "AdaBoost": {
+                'n_estimators': [50, 100, 200],
+                'learning_rate': [0.01, 0.1, 0.5]
+            }
+        }
+      
         self.model_performance = {}
 
     @st.cache_data
