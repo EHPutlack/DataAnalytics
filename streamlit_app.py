@@ -431,19 +431,19 @@ class ALSDetectionApp:
           os.remove(temp_image_path)
 
     def run(self):
-        global z  # Access the global variable z
-        st.write(f"Value of z: {z}")
+        ## global z  # Access the global variable z
+        ## st.write(f"Value of z: {z}")
       
         st.sidebar.title("Menu Options")
 
         # Conditionally set sidebar visibility based on z
-        if z == 1:
-            st.markdown(hide_sidebar_style, unsafe_allow_html=True)
+        ## if z == 1:
+        ##    st.markdown(hide_sidebar_style, unsafe_allow_html=True)
           
-        else:
-            st.markdown(show_sidebar_style, unsafe_allow_html=True)
+        ## else:
+        ##    st.markdown(show_sidebar_style, unsafe_allow_html=True)
 
-        z += 1  # Increment z each time run() is called
+        ## z += 1  # Increment z each time run() is called
       
         #Sets the Initial sidebar options
         if 'menu_option' not in st.session_state:
@@ -487,7 +487,7 @@ class ALSDetectionApp:
         if st.button("Get Started"):
             st.session_state['data_input_option'] = "File Upload"
             self.display_data_input()
-            st.markdown(show_sidebar_style, unsafe_allow_html=True)
+            ## st.markdown(show_sidebar_style, unsafe_allow_html=True)
 
     def display_data_input(self):
         st.sidebar.header("Data Input Options")
