@@ -434,6 +434,9 @@ class ALSDetectionApp:
         - Use the sidebar to navigate through the different sections.
         """)
 
+        if st.button("Get Started"):
+          st.markdown(show_sidebar_style, unsafe_allow_html=True)
+
     def display_data_input(self):
         st.sidebar.header("Data Input Options")
         data_input_option = st.sidebar.radio("Select Data Input Method", ["Manual Entry", "File Upload", "Example Data"])
