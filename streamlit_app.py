@@ -71,6 +71,19 @@ hide_sidebar_style = """
     </style>
     """
 
+show_sidebar_style = """
+    <style>
+    [data-testid="stSidebar"][aria-expanded="true"] {
+        width: 300px;
+        margin-left: 0;
+    }
+    [data-testid="stSidebar"][aria-expanded="false"] {
+        width: 300px;
+        margin-left: 0;
+    }
+    </style>
+    """
+
 class ALSDetectionApp:
     def __init__(self):
         self.general_parameters = [
