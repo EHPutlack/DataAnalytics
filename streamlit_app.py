@@ -58,20 +58,25 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-hide_sidebar_style = """
-    <style>
-    [data-testid="stSidebar"][aria-expanded="true"] {
-        width: 0;
-        margin-left: -300px;
-    }
-    [data-testid="stSidebar"][aria-expanded="false"] {
-        width: 0;
-        margin-left: -300px;
-    }
-    </style>
-    """
+if 'sidebar_visible' not in st.session_state:
+    st.session_state.sidebar_visible = False
 
-show_sidebar_style = """
+def hide_sidebar():
+    st.markdown("""
+    <style>
+    [data-testid="stSidebar"][aria-expanded="true"] {
+        width: 0;
+        margin-left: -300px;
+    }
+    [data-testid="stSidebar"][aria-expanded="false"] {
+        width: 0;
+        margin-left: -300px;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+def show_sidebar():
+    st.markdown("""
     <style>
     [data-testid="stSidebar"][aria-expanded="true"] {
         width: 300px;
@@ -82,7 +87,7 @@ show_sidebar_style = """
         margin-left: 0;
     }
     </style>
-    """
+    """, unsafe_allow_html=True)
 
 class ALSDetectionApp:
     def __init__(self):
@@ -419,7 +424,11 @@ class ALSDetectionApp:
             os.remove(temp_image_path)
 
     def run(self):
-        st.markdown(hide_sidebar_style, unsafe_allow_html=True)
+        if st.session_state.sidebar_visible:
+            show_sidebar()
+        else:
+            hide_sidebar()
+
         st.sidebar.title("Menu Options")
         menu_option = st.sidebar.radio("Choose an option", ["Welcome", "Data Input", "Model Information", "Graphs", "Accessibility Settings"])
 
@@ -448,7 +457,8 @@ class ALSDetectionApp:
         """)
 
         if st.button("Get Started"):
-          st.markdown(show_sidebar_style, unsafe_allow_html=True)
+          st.session_state.sidebar_visible = True
+          st.experimental_rerun()
 
     def display_data_input(self):
         st.sidebar.header("Data Input Options")
