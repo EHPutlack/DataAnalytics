@@ -15,3 +15,6 @@ This app allows users to input information about patient, or patients, that may 
    ```
    $ streamlit run streamlit_app.py
    ```
+
+
+This version is meant to be a slight variation of the fully functional, but incomplete main version.
