@@ -458,7 +458,7 @@ class ALSDetectionApp:
 
         if st.button("Get Started"):
           st.session_state.sidebar_visible = True
-          st.experimental_set_query_params(got_started=True)
+          rerun()
 
     def display_data_input(self):
         st.sidebar.header("Data Input Options")
@@ -761,6 +761,7 @@ class ALSDetectionApp:
         """)
 
 if __name__ == "__main__":
+    st.radio("Force rerun", ["Yes", "No"], key="rerun_trigger", label_visibility="hidden")
     app = ALSDetectionApp()
     app.load_data()
     X_train, X_test, y_train, y_test = app.preprocess_data()
