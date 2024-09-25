@@ -458,7 +458,7 @@ class ALSDetectionApp:
 
         if st.button("Get Started"):
           st.session_state.sidebar_visible = True
-          st.experimental_set_query_params()
+          st.experimental_set_query_params(got_started=True)
 
     def display_data_input(self):
         st.sidebar.header("Data Input Options")
