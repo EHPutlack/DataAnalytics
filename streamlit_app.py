@@ -58,6 +58,9 @@ st.markdown(
     unsafe_allow_html=True
 )
 
+def rerun():
+    st.session_state["rerun_trigger"] = not st.session_state.get("rerun_trigger", False)
+
 if 'sidebar_visible' not in st.session_state:
     st.session_state.sidebar_visible = False
 
