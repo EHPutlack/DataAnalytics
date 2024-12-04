@@ -1,0 +1,64 @@
+def process_and_validate_upload(file):
+    """
+    Main function to process and validate file upload
+    Returns: dict containing processing results and statistics
+    """
+    # Validate file format
+    is_valid_format, file_extension = validate_file_format(file.filename)
+    if not is_valid_format:
+        return {
+            'success': False,
+            'message': 'Invalid file format. Please upload CSV or XLSX file.',
+            'stats': None
+        }
+        
+    # Read file
+    read_success, df, read_error = read_data_file(file, file_extension)
+    if not read_success:
+        return {
+            'success': False,
+            'message': read_error,
+            'stats': None
+        }
+        
+    # Validate columns
+    columns_valid, missing_columns = validate_required_columns(df)
+    if not columns_valid:
+        return {
+            'success': False,
+            'message': f'Missing required columns: {", ".join(missing_columns)}',
+            'stats': None
+        }
+        
+    # Calculate detailed statistics
+    stats = {
+        'total_records': len(df),
+        'missing_values': df.isnull().sum().to_dict(),
+        'column_stats': {
+            column: {
+                'mean': float(df[column].mean()) if pd.api.types.is_numeric_dtype(df[column]) else None,
+                'std': float(df[column].std()) if pd.api.types.is_numeric_dtype(df[column]) else None,
+                'min': float(df[column].min()) if pd.api.types.is_numeric_dtype(df[column]) else None,
+                'max': float(df[column].max()) if pd.api.types.is_numeric_dtype(df[column]) else None
+            } for column in df.columns
+        }
+    }
+
+    # Generate unique table name
+    table_name = f"patient_data_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}"
+    
+    # Save to database
+    db_success, db_error = save_to_database(df, table_name)
+    if not db_success:
+        return {
+            'success': False,
+            'message': db_error,
+            'stats': None
+        }
+        
+    return {
+        'success': True,
+        'message': f'Successfully uploaded {len(df)} records to database.',
+        'stats': stats,
+        'table_name': table_name
+    }

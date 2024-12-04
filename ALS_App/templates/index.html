@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Mitosense's ALS Detection Model!</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <header>
+        <img src="{{ url_for('static', filename='images/Logo.PNG') }}" alt="Logo">
+        <h1>Welcome to Mitosense's ALS Detection Model!</h1>
+    </header>
+
+    <!-- Navigation Bar -->
+    <nav>
+        <ul>
+            <li class="{{ 'active' if request.endpoint == 'index' else '' }}">
+                <a href="{{ url_for('index') }}">Home</a>
+            </li>
+            <li class="{{ 'active' if request.endpoint == 'model_information' else '' }}">
+                <a href="{{ url_for('model_information') }}">Model Information</a>
+            </li>
+            <li class="{{ 'active' if request.endpoint == 'data_input' else '' }}">
+                <a href="{{ url_for('data_input') }}">Data Input</a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Home Page Content -->
+    <main>
+        <div class="home-content">
+            <h2>About Our ALS Detection Model</h2>
+            <p>This application allows you to analyze patient data for ALS detection using advanced machine learning models.</p>
+            
+            <div class="features-list">
+                <h3>Key Features:</h3>
+                <ul>
+                    <li>Upload patient data and receive instant predictions</li>
+                    <li>Compare various machine learning models and their performance</li>
+                    <li>Visualize performance metrics and feature importance</li>
+                    <li>Access detailed model information and documentation</li>
+                </ul>
+            </div>
+
+            <div class="getting-started">
+                <h3>Getting Started</h3>
+                <p>To begin your analysis, please select one of the following options:</p>
+                <div class="action-buttons">
+                    <a href="{{ url_for('data_input') }}" class="button">Upload Data</a>
+                    <a href="{{ url_for('model_information') }}" class="button">Learn More</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>ALS Detection App - Powered by Flask</p>
+    </footer>
+</body>
+</html>

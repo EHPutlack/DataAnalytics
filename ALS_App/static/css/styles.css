@@ -1,0 +1,684 @@
+/* Global styles */
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: Arial, sans-serif;
+    background-color: #242463;
+    color: #F3A122;
+}
+
+/* Main content container */
+main {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 80vh;
+    text-align: center;
+    padding: 20px;
+    padding-bottom: 100px;
+}
+
+/* Header Styling */
+header {
+    text-align: center;
+    padding: 20px 0;
+}
+
+header img {
+    display: block;
+    margin: 0 auto;
+    width: 150px;
+}
+
+header h1 {
+    text-align: center;
+    margin-top: 10px;
+    color: #F3A122;
+}
+
+/* Navigation Bar Styling */
+nav {
+    background-color: #5E503F;
+    color: #F3A122;
+    overflow: hidden;
+    height: 40px;
+    align-items: center;
+    display: flex;
+    justify-content: center;
+}
+
+nav ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+    height: 50%;
+}
+
+nav ul li {
+    display: inline;
+    margin: 0 15px;
+}
+
+nav ul li a {
+    color: #F3A122;
+    text-decoration: none;
+    font-size: 18px;
+    align-items: center;
+    height: 50%;
+    padding: 0 20px;
+}
+
+nav ul li.active a {
+    font-weight: bold;
+    color: #242463;
+    text-decoration: underline;
+}
+
+nav ul li a:hover {
+    color: #F38100;
+    text-decoration: underline;
+}
+
+/* Home Page Content Styling */
+.home-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+.home-content h2 {
+    color: #F3A122;
+    margin-bottom: 20px;
+    font-size: 2em;
+}
+
+.home-content h3 {
+    color: #F3A122;
+    margin: 25px 0 15px 0;
+    font-size: 1.5em;
+}
+
+.home-content p {
+    color: #F3A122;
+    margin-bottom: 15px;
+    line-height: 1.6;
+    font-size: 1.1em;
+}
+
+/* Button Styling */
+.button {
+    background-color: #F3A122;
+    color: #242463;
+    padding: 12px 24px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.button:hover {
+    background-color: #F38100;
+}
+
+.action-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+/* Model Information Section Styling */
+.model-info-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    text-align: center;
+}
+
+.model-info-container {
+    width: 80%;
+    margin: 0 auto;
+    padding: 20px;
+    color: #242363;
+    font-weight: bold;
+    text-align: center;
+}
+
+.model-info-container table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.model-info-container th, 
+.model-info-container td {
+    padding: 10px;
+    border: 1px solid #F38100;
+    text-align: center;
+}
+
+.model-info-container th {
+    background-color: #F3A122;
+    color: #242463;
+}
+
+.model-info-container td {
+    color: #F3A122;
+}
+
+/* Metrics Selection Styling */
+.plot-metrics-section {
+    text-align: center;
+    margin: 30px auto;
+    padding: 20px;
+    max-width: 800px;
+}
+
+.plot-metrics-section h2 {
+    color: #F3A122;
+    margin-bottom: 20px;
+    font-size: 1.8em;
+}
+
+.plot-metrics-section form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+.plot-metrics-section label {
+    color: #F3A122;
+    font-size: 1.2em;
+    margin-bottom: 10px;
+}
+
+.plot-metrics-section select {
+    width: 300px;
+    padding: 10px;
+    margin: 10px 0;
+    min-height: 150px;
+    background-color: #242463;
+    color: #F3A122;
+    border: 2px solid #F3A122;
+    border-radius: 5px;
+    font-size: 1em;
+}
+
+.plot-metrics-section select option {
+    background-color: #242463;
+    color: #F3A122;
+    padding: 5px;
+}
+
+.plot-metrics-section select option:checked {
+    background-color: #F3A122 !important;
+    color: #242463 !important;
+}
+
+.plot-metrics-section button {
+    background-color: #F3A122;
+    color: #242463;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1.1em;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.plot-metrics-section button:hover {
+    background-color: #F38100;
+    transform: translateY(-2px);
+}
+
+.plot-metrics-section button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Key Features Section Styling */
+.key-features {
+    text-align: center;
+    margin: 30px auto;
+    max-width: 800px;
+    padding: 20px;
+}
+
+.key-features h2 {
+    color: #F3A122;
+    margin-bottom: 20px;
+    font-size: 1.8em;
+}
+
+.features-list {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.features-list ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    max-width: 600px;
+}
+
+.features-list li {
+    color: #F3A122;
+    margin: 15px 0;
+    padding: 10px;
+    border-left: 3px solid #F3A122;
+    background-color: rgba(243, 161, 34, 0.1);
+    text-align: left;
+    transition: transform 0.2s ease;
+}
+
+.features-list li:hover {
+    transform: translateX(10px);
+}
+
+/* Graph Section Styling */
+.graphs-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    text-align: center;
+}
+
+.graph-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 80%;
+}
+
+.graph-container img {
+    width: 80%;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+}
+
+.graph-container h3 {
+    margin-top: 20px;
+    font-size: 1.5rem;
+}
+
+/* Graph Section Button Styling */
+.graphs-section .button-container {
+    margin-top: 40px;
+    margin-bottom: 20px;
+}
+
+.view-graphs-btn, 
+.graphs-section .button {
+    background-color: #F3A122;
+    color: #242463;
+    padding: 12px 24px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    display: inline-block;
+    border: none;
+    cursor: pointer;
+}
+
+.view-graphs-btn:hover, 
+.graphs-section .button:hover {
+    background-color: #F38100;
+}
+
+/* Plot Section */
+.plot-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    text-align: center;
+    width: 100%;
+    margin: 0 auto;
+    overflow: visible;
+}
+
+#metricsPlot {
+    max-width: 95%;
+    height: auto;
+    margin: 30px auto;
+    display: block;
+}
+
+.button-container {
+    margin-top: 30px;
+    text-align: center;
+    width: 100%;
+}
+
+/* Footer Styling */
+footer {
+    background-color: #5E503F;
+    color: #F3A122;
+    text-align: center;
+    padding: 10px;
+    position: relative;
+    bottom: 0;
+    width: 100%;
+    margin-top: 50px;
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+    .action-buttons {
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .home-content {
+        padding: 20px 10px;
+    }
+    
+    nav ul li {
+        margin: 0 8px;
+    }
+    
+    nav ul li a {
+        padding: 0 10px;
+        font-size: 16px;
+    }
+    
+    .model-info-container {
+        width: 95%;
+        padding: 10px;
+    }
+    
+    .graph-container {
+        width: 95%;
+    }
+
+    .plot-metrics-section select {
+        width: 90%;
+    }
+    
+    .key-features {
+        padding: 20px 10px;
+    }
+    
+    .features-list li {
+        padding: 8px;
+        font-size: 0.9em;
+    }
+}
+
+.download-btn {
+    background-color: #F3A122;
+    color: #242463;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    margin: 10px 0;
+    transition: all 0.3s ease;
+}
+
+.download-btn:hover {
+    background-color: #F38100;
+    transform: translateY(-2px);
+}
+
+.button-container {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+/* Data Input Section Styling */
+.data-input-section {
+    max-width: 800px;
+    margin: 30px auto;
+    padding: 20px;
+    text-align: center;
+}
+
+.upload-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin: 30px auto;
+    max-width: 500px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    text-align: left;
+}
+
+.form-group label {
+    color: #F3A122;
+    font-size: 1.1em;
+    font-weight: bold;
+}
+
+.form-group input[type="file"],
+.form-group select {
+    padding: 10px;
+    border: 2px solid #F3A122;
+    border-radius: 5px;
+    background-color: #242463;
+    color: #F3A122;
+    cursor: pointer;
+}
+
+.form-group select option {
+    background-color: #242463;
+    color: #F3A122;
+}
+
+.error-message {
+    color: #ff4444;
+    margin: 20px 0;
+    padding: 10px;
+    border: 1px solid #ff4444;
+    border-radius: 5px;
+    background-color: rgba(255, 68, 68, 0.1);
+}
+
+.predictions-section {
+    margin: 30px 0;
+}
+
+.predictions-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 20px 0;
+}
+
+.prediction-item {
+    padding: 10px;
+    border-radius: 5px;
+    background-color: rgba(243, 161, 34, 0.1);
+}
+
+.prediction-positive {
+    color: #ff4444;
+    font-weight: bold;
+}
+
+.prediction-negative {
+    color: #44ff44;
+    font-weight: bold;
+}
+
+.upload-success-message {
+    background-color: rgba(68, 255, 68, 0.1);
+    color: #44ff44;
+    margin: 20px 0;
+    padding: 15px;
+    border: 1px solid #44ff44;
+    border-radius: 5px;
+    text-align: center;
+    font-weight: bold;
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Statistics Display Styling */
+.statistics-container {
+    margin: 20px 0;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+.stat-section {
+    margin: 20px 0;
+}
+
+.stat-section h4 {
+    color: #242463;
+    margin-bottom: 15px;
+}
+
+.missing-values-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+}
+
+.missing-value-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px;
+    background-color: #fff;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.column-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.column-stat-card {
+    background-color: #fff;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.column-stat-card h5 {
+    color: #F3A122;
+    margin-bottom: 10px;
+    font-size: 1.1em;
+}
+
+.stat-list {
+    list-style: none;
+    padding: 0;
+}
+
+.stat-list li {
+    margin: 5px 0;
+    color: #242463;
+}
+
+.success-section {
+    margin-top: 30px;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+.database-info {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #e9ecef;
+    border-radius: 4px;
+}
+
+.clear-database-btn {
+    background-color: #dc3545;
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    margin-left: 15px;
+    transition: all 0.3s ease;
+}
+
+.clear-database-btn:hover {
+    background-color: #c82333;
+    transform: translateY(-2px);
+}
+
+.clear-database-form {
+    margin: 0;
+    display: inline-block;
+}
+
+.database-actions {
+    display: flex;
+    gap: 10px;
+    margin-left: 10px;
+}
+
+.file-input-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.restore-backup-btn {
+    background-color: #28a745;
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.restore-backup-btn:hover {
+    background-color: #218838;
+    transform: translateY(-2px);
+}
+
+.restore-backup-form {
+    margin: 0;
+    display: inline-block;
+}
