@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Metrics Plot</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Metrics Plot</h1>
+    </header>
+
+    <section class="plot-section">
+        <img src="data:image/png;base64,{{ plot_image }}" alt="Metrics Plot" id="metricsPlot">
+        <div class="button-container">
+            <button onclick="window.location.href='{{ url_for('model_information') }}'" class="view-graphs-btn">
+                Back to Model Information
+            </button>
+            <button onclick="window.location.href='{{ url_for('download_plot_pdf') }}'" class="download-btn">
+                Download PDF
+            </button>
+        </div>
+    </section>
+
+    <footer>
+        <p>Plot generated from selected metrics.</p>
+    </footer>
+</body>
+</html>

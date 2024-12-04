@@ -1,0 +1,12 @@
+modules = ["python-3.12", "web", "postgresql-16"]
+run = "streamlit run undefined"
+
+[nix]
+channel = "stable-24_05"
+
+[deployment]
+run = ["sh", "-c", "Python ALS_App/app.py"]
+
+[[ports]]
+localPort = 8080
+externalPort = 80

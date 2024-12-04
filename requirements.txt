@@ -9,3 +9,6 @@ fpdf
 plotly
 openpyxl
 kaleido
+numpy
+flask
+psycopg2

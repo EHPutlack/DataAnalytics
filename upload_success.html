@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload Success</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <header>
+        <img src="{{ url_for('static', filename='images/Logo.PNG') }}" alt="Logo">
+        <h1>Upload Success</h1>
+    </header>
+
+    <main>
+        <div class="upload-stats">
+            <h2>Upload Statistics</h2>
+            <p>Table Name: {{ table_name }}</p>
+            <p>Total Records: {{ stats.total_records }}</p>
+            
+            <h3>Missing Values:</h3>
+            <ul>
+            {% for column, count in stats.missing_values.items() %}
+                <li>{{ column }}: {{ count }}</li>
+            {% endfor %}
+            </ul>
+
+            <h3>Column Statistics:</h3>
+            {% for column, col_stats in stats.column_stats.items() %}
+                {% if col_stats.mean is not none %}
+                <div class="column-stats">
+                    <h4>{{ column }}</h4>
+                    <ul>
+                        <li>Mean: {{ "%.2f"|format(col_stats.mean) }}</li>
+                        <li>Std: {{ "%.2f"|format(col_stats.std) }}</li>
+                        <li>Min: {{ "%.2f"|format(col_stats.min) }}</li>
+                        <li>Max: {{ "%.2f"|format(col_stats.max) }}</li>
+                    </ul>
+                </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+
+        <div class="button-container">
+            <a href="{{ url_for('data_input') }}" class="button">Upload Another File</a>
+            <a href="{{ url_for('index') }}" class="button">Return to Home</a>
+        </div>
+    </main>
+
+    <footer>
+        <p>ALS Detection App - Powered by Flask</p>
+    </footer>
+</body>
+</html>
